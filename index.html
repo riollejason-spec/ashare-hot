@@ -4,8 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#07090d">
+<meta name="robots" content="noindex,nofollow,noarchive">
 <link rel="icon" href="data:,">
-<title>A股盘前热点 · Top 20</title>
+<title>A股每日看板</title>
 <style>
 :root{--bg:#07090d;--panel:#0d1117;--panel2:#11161d;--line:#232a33;--text:#d6dde6;--dim:#7d8590;
 --blue:#4493f8;--cyan:#39c5e6;--pink:#ff4f8b;--yellow:#e3b341;--up:#f0524f;--down:#2fbf71;
@@ -14,232 +15,813 @@
 *{box-sizing:border-box}
 html,body{overflow-x:hidden;margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-text-size-adjust:100%}
 body{background:radial-gradient(1200px 600px at 70% -10%,#0f1a2a 0%,transparent 60%),var(--bg);min-height:100vh}
-a{color:var(--blue);text-decoration:none}
-a:hover{text-decoration:underline}
-.wrap{max-width:980px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 14px 40px}
+a{color:var(--blue);text-decoration:none} a:hover{text-decoration:underline}
+button{font:inherit;color:inherit}
+.wrap{max-width:980px;margin:0 auto;padding:0 14px 40px}
+/* top nav */
+nav.top{position:sticky;top:0;z-index:20;background:rgba(7,9,13,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line);margin:0 -14px;padding:max(8px,env(safe-area-inset-top)) 14px 0}
+.navin{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.navin::-webkit-scrollbar{display:none}
+.nt{flex:0 0 auto;background:none;border:0;border-bottom:2px solid transparent;padding:9px 11px 10px;font-size:14px;color:var(--dim);cursor:pointer;white-space:nowrap;position:relative}
+.nt.on{color:#f0f6fc;border-bottom-color:var(--pink)}
+.nt .pd{display:inline-block;width:6px;height:6px;border-radius:50%;margin-left:5px;vertical-align:2px;background:#30363d}
+.nt .pd.ok{background:var(--down);box-shadow:0 0 6px var(--down)}
+.nt .pd.ex{background:var(--yellow)}
 /* stat counters */
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:14px 4px 16px;border-bottom:1px solid var(--line)}
-.stat .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
-.stat .num{font-family:var(--mono);font-size:30px;font-weight:600;line-height:1.15;margin-top:4px;color:#e6edf3;font-variant-numeric:tabular-nums}
+.stat .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat .num{font-family:var(--mono);font-size:30px;font-weight:600;line-height:1.15;margin-top:4px;color:#e6edf3;font-variant-numeric:tabular-nums;white-space:nowrap}
 .stat:nth-child(1) .num{color:var(--cyan)} .stat:nth-child(5) .num{color:var(--pink)}
+.stat .num.up{color:var(--up)!important} .stat .num.down{color:var(--down)!important}
 /* header */
-header{padding:18px 4px 6px}
+header{padding:16px 4px 4px}
 h1{margin:0;font-size:24px;letter-spacing:.02em;color:#f0f6fc}
 h1 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--pink);margin-right:8px;vertical-align:middle;box-shadow:0 0 10px var(--pink);animation:blink 1.6s infinite}
 @keyframes blink{50%{opacity:.25}}
 .meta{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:6px}
 .mood{margin:12px 0 4px;padding:10px 12px;border-left:3px solid var(--cyan);background:#0b131c;font-size:14px;line-height:1.65;border-radius:0 6px 6px 0}
+.mood:empty{display:none}
+.note{margin:10px 0 0;padding:8px 12px;border:1px dashed #6e5a1f;background:#1a1508;color:var(--yellow);font-size:12.5px;border-radius:6px;line-height:1.55}
+.exb{margin:12px 0 0;padding:10px 12px;border:1px solid #7a5d12;background:repeating-linear-gradient(135deg,#2a2006 0 12px,#211903 12px 24px);color:#ffd866;font-size:13px;font-weight:600;border-radius:8px;letter-spacing:.04em}
+.exb small{display:block;font-weight:400;color:#d9c48a;margin-top:3px;letter-spacing:0}
 /* market strip */
 .strip{display:flex;gap:8px;overflow-x:auto;padding:12px 2px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.strip:empty{display:none}
 .strip::-webkit-scrollbar{display:none}
 .tick{flex:0 0 auto;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 10px;min-width:96px}
-.tick .n{font-size:11px;color:var(--dim)}
-.tick .v{font-family:var(--mono);font-size:14px;color:#e6edf3;margin-top:2px}
-.tick .c{font-family:var(--mono);font-size:12px;margin-top:1px}
+.tick .n{font-size:11px;color:var(--dim)} .tick .v{font-family:var(--mono);font-size:14px;color:#e6edf3;margin-top:2px} .tick .c{font-family:var(--mono);font-size:12px;margin-top:1px}
 .up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--dim)}
 .snapt{font-family:var(--mono);font-size:11px;color:var(--dim);padding:0 4px}
 /* panel */
 .panel{position:relative;margin-top:16px;border:1px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden}
 .ptop{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel2)}
-.ptop .ico{width:16px;height:16px;border-radius:50%;background:#e6edf3}
+.ptop .ico{width:16px;height:16px;border-radius:50%;background:#e6edf3;flex:0 0 auto}
 .ptop .t{font-size:14px;font-weight:600}
 .ptop .search{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 8px;width:150px;outline:none}
 .ptop .search:focus{border-color:var(--blue)}
-.phead{padding:16px 16px 10px}
-.phead h2{margin:0;font-size:22px;color:#f0f6fc}
-.phead p{margin:6px 0 0;color:var(--dim);font-size:13px}
+.phead{padding:16px 16px 10px} .phead h2{margin:0;font-size:22px;color:#f0f6fc} .phead p{margin:6px 0 0;color:var(--dim);font-size:13px}
 .tabs{display:flex;align-items:center;gap:6px;margin:12px 16px 0;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);flex-wrap:wrap}
-.tab{font-size:12px;padding:5px 10px;border-radius:6px;color:var(--text);cursor:pointer;border:1px solid transparent;user-select:none}
+.tab{font-size:12px;padding:5px 10px;border-radius:6px;cursor:pointer;user-select:none}
 .tab.on{background:#1f6feb;color:#fff}
 .tabs .sp{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--dim)}
 ol.list{list-style:none;margin:12px 0 0;padding:0;position:relative;z-index:2}
 .row{display:flex;gap:12px;padding:14px 16px;border-top:1px solid var(--line);position:relative;opacity:0;transform:translateY(6px);animation:in .5s forwards}
 @keyframes in{to{opacity:1;transform:none}}
 .row.hide{display:none}
+.row.flash{animation:in .5s forwards,fl 1.8s .1s}
+@keyframes fl{0%,60%{background:#1f6feb33}100%{background:transparent}}
 .main{flex:1;min-width:0}
 .ttl{font-size:16px;font-weight:600;line-height:1.4}
 .ttl .ic{display:inline-block;width:12px;height:12px;border:1.5px solid var(--dim);border-radius:2px;margin-right:6px;vertical-align:-1px}
+.ttl .code{font-family:var(--mono);font-size:13px;font-weight:400;color:var(--dim);margin-left:6px}
 .why{color:#aeb7c2;font-size:13.5px;line-height:1.6;margin-top:5px}
 .imp{color:var(--dim);font-size:12.5px;line-height:1.55;margin-top:4px}
+.risk{color:#c9a65a;font-size:12.5px;line-height:1.55;margin-top:4px}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
-.tg{font-size:11.5px;padding:2px 7px;border-radius:999px;border:1px solid var(--line);color:var(--text);white-space:nowrap}
-.tg.src{font-family:var(--sans);color:var(--dim)} .tg.src i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
-.tg.src a{color:inherit}
-.tg.src sup{color:var(--blue);font-size:10px}
+.tg{font-size:11.5px;padding:2px 7px;border-radius:999px;border:1px solid var(--line);color:var(--text);white-space:nowrap;background:none}
+.tg.src{color:var(--dim)} .tg.src i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.tg.src a{color:inherit} .tg.src sup{color:var(--blue);font-size:10px}
 .tg.bull{color:var(--up);border-color:#5a2526;background:#1d0f10}
 .tg.bear{color:var(--down);border-color:#1f4a33;background:#0d1a13}
-.side{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.tg.sec{color:#c9d1d9;border-color:#3b4350;background:#161b22}
+.tg.hs{color:var(--cyan);border-color:#1d4a57;background:#0a1a20;cursor:pointer;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.tg.hs:hover{border-color:var(--cyan)}
+.tg.amt{font-family:var(--mono);color:var(--dim)}
+.side{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:64px}
 .badge{font-family:var(--mono);font-size:12px;border:1px solid #30363d;background:#21262d;border-radius:6px;padding:4px 10px;color:#e6edf3;white-space:nowrap}
 .badge.top3{border-color:#6e3b10;background:#2a1a08;color:var(--yellow)}
 .senti{font-size:11px;font-family:var(--mono);white-space:nowrap}
-/* keyword flicker */
+.px{font-family:var(--mono);font-size:15px;color:#e6edf3;white-space:nowrap}
+.chg{font-family:var(--mono);font-size:13px;white-space:nowrap}
+.ov{font-size:11px;padding:2px 6px;border-radius:4px;border:1px solid #5b3a8a;background:#1b1230;color:#c9a7ff;white-space:nowrap}
+.sub{font-family:var(--mono);font-size:10.5px;color:var(--dim);white-space:nowrap}
+/* placeholder */
+.ph{padding:44px 18px 52px;text-align:center;position:relative;z-index:2}
+.ph-t{font-family:var(--mono);font-size:26px;color:#f0f6fc;letter-spacing:.04em}
+.ph-s{color:var(--dim);font-size:13.5px;margin-top:10px;line-height:1.6}
+.ph-c{font-family:var(--mono);font-size:14px;color:var(--cyan);margin-top:14px}
+.ph-r{display:inline-block;margin-top:18px;font-size:12.5px;color:var(--blue);cursor:pointer;border:1px solid var(--line);border-radius:6px;padding:6px 12px;background:var(--panel2)}
+/* review */
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px 0;position:relative;z-index:2}
+.card{border:1px solid var(--line);border-radius:10px;background:var(--panel2);padding:12px}
+.card .h{font-size:13px;color:var(--dim)} .card .h b{color:#e6edf3;font-weight:600}
+.card .big{font-family:var(--mono);font-size:28px;font-weight:600;margin-top:4px}
+.card .kv{display:flex;justify-content:space-between;font-size:12.5px;margin-top:6px;color:var(--dim)}
+.card .kv span:last-child{font-family:var(--mono);color:#e6edf3}
+.card .bw{font-size:12px;color:var(--dim);margin-top:8px;line-height:1.6}
+.bench{margin:12px 16px 0;font-size:13px;color:var(--dim);position:relative;z-index:2}
+.bench b{font-family:var(--mono);font-weight:500}
+.summ{margin:12px 16px 0;padding:10px 12px;border-left:3px solid var(--pink);background:#160c12;font-size:13.5px;line-height:1.65;border-radius:0 6px 6px 0;position:relative;z-index:2}
+.summ ul{margin:6px 0 0;padding-left:18px;color:#aeb7c2}
+h3.sec{margin:18px 16px 8px;font-size:15px;color:#f0f6fc;position:relative;z-index:2}
+table.t{width:calc(100% - 32px);margin:0 16px;border-collapse:collapse;font-size:13px;position:relative;z-index:2}
+table.t th{font-weight:500;color:var(--dim);font-size:11.5px;text-align:right;padding:6px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.t td{padding:7px 6px;border-bottom:1px solid #1a2028;text-align:right;font-family:var(--mono);white-space:nowrap}
+table.t th:nth-child(-n+2),table.t td:nth-child(-n+2){text-align:left}
+table.t td.nm{font-family:var(--sans);white-space:normal} table.t td.nm small{font-family:var(--mono);color:var(--dim);margin-left:4px}
+table.t td.rk{color:var(--dim);width:22px}
+.tblwrap{overflow-x:auto;padding-bottom:6px}
+/* history */
+.chart{margin:14px 16px 0;border:1px solid var(--line);border-radius:10px;background:var(--panel2);padding:10px 10px 6px;position:relative;z-index:2}
+.chart svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--dim);margin:6px 2px 0}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 .kw{border-radius:2px;transition:all .15s}
-.kw.h1{outline:1px solid var(--cyan);color:#e6f7ff}
-.kw.h2{background:var(--pink);color:#fff}
-.kw.h3{color:var(--yellow);font-style:italic}
-.kw.h4{background:#39c5e655;color:#fff}
+.kw.h1{outline:1px solid var(--cyan);color:#e6f7ff} .kw.h2{background:var(--pink);color:#fff} .kw.h3{color:var(--yellow);font-style:italic} .kw.h4{background:#39c5e655;color:#fff}
+/* lock screen (encrypted build) */
+.lock{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto;background:radial-gradient(70% 55% at 50% 38%,#1d0f38 0%,#0b0d18 58%,#07090d 100%)}
+.lock[hidden]{display:none}
+.lock::before{content:"";position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(#ffffff08 1px,transparent 1px),linear-gradient(90deg,#ffffff08 1px,transparent 1px);background-size:26px 26px;-webkit-mask-image:radial-gradient(ellipse at 50% 40%,#000 20%,transparent 70%);mask-image:radial-gradient(ellipse at 50% 40%,#000 20%,transparent 70%)}
+.lk{position:relative;width:100%;max-width:360px;text-align:center;padding:30px 24px 22px;border:1px solid #2f2550;border-radius:16px;background:rgba(13,10,26,.78);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);box-shadow:0 24px 70px -24px #7c3aedcc}
+.lk-orb{display:flex;justify-content:center;gap:5px;margin:0 auto 18px;height:78px}
+.lk-orb i{width:40px;height:76px;border:1.6px solid var(--cyan);border-radius:70% 18% 18% 70%/60% 30% 30% 60%;box-shadow:0 0 16px #39c5e6aa,inset 0 0 18px #39c5e655;animation:breath 2.4s ease-in-out infinite}
+.lk-orb i+i{border-color:var(--pink);border-radius:18% 70% 70% 18%/30% 60% 60% 30%;box-shadow:0 0 16px #ff4f8baa,inset 0 0 18px #ff4f8b55;animation-delay:1.2s}
+@keyframes breath{50%{filter:brightness(1.6);transform:scale(1.04)}}
+.lk-k{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;color:var(--pink);text-shadow:0 0 10px #ff4f8b88}
+.lk h2{margin:6px 0 4px;font-size:22px;color:#f0f6fc;letter-spacing:.04em}
+.lk-s{margin:0 0 16px;color:#aeb7c2;font-size:14px}
+.lk input[type=password]{width:100%;font:inherit;font-size:16px;padding:11px 12px;border-radius:9px;border:1px solid #3b3260;background:#0a0814;color:#f0f6fc;outline:none}
+.lk input[type=password]:focus{border-color:var(--cyan);box-shadow:0 0 0 3px #39c5e633}
+.lk-r{display:flex;align-items:center;gap:8px;margin:12px 2px 0;font-size:13px;color:#aeb7c2;cursor:pointer;user-select:none;text-align:left}
+.lk-r input{width:16px;height:16px;margin:0;accent-color:#a371f7}
+.lk button{width:100%;margin-top:14px;padding:11px;border:0;border-radius:9px;font-size:15px;font-weight:600;color:#fff;background:linear-gradient(90deg,#1f6feb,#a371f7 60%,#ff4f8b);cursor:pointer;letter-spacing:.3em}
+.lk button:disabled{opacity:.6;cursor:wait}
+.lk-e{min-height:20px;margin-top:10px;font-size:13px;color:var(--up)}
+.lk-n{margin-top:4px;font-size:11.5px;color:#5f6773;line-height:1.6}
+.lk.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.nt.lockb{margin-left:auto;font-size:12px;color:var(--dim)}
+/* brain hero (neural map of real hot items) */
+.hero{position:relative;margin:14px 0 4px;border:1px solid #2b2342;border-radius:14px;overflow:hidden;isolation:isolate;
+ background:radial-gradient(60% 75% at 42% 52%,#1d0f38 0%,#0d0f1f 55%,#07090f 100%);box-shadow:0 18px 50px -24px #7c3aedaa,inset 0 0 80px #000c}
+.hero[hidden]{display:none}
+.hero::before{content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;background-image:linear-gradient(#ffffff09 1px,transparent 1px),linear-gradient(90deg,#ffffff09 1px,transparent 1px);background-size:26px 26px;
+ -webkit-mask-image:radial-gradient(ellipse at 45% 50%,#000 25%,transparent 78%);mask-image:radial-gradient(ellipse at 45% 50%,#000 25%,transparent 78%)}
+.hero .cr{position:absolute;width:14px;height:14px;border:0 solid #39c5e6;opacity:.7;pointer-events:none}
+.hero .cr.tl{left:6px;top:6px;border-left-width:1.5px;border-top-width:1.5px}.hero .cr.tr{right:6px;top:6px;border-right-width:1.5px;border-top-width:1.5px}
+.hero .cr.bl{left:6px;bottom:6px;border-left-width:1.5px;border-bottom-width:1.5px}.hero .cr.br{right:6px;bottom:6px;border-right-width:1.5px;border-bottom-width:1.5px}
+.hhead{display:flex;align-items:baseline;gap:4px 10px;padding:13px 18px 0;flex-wrap:wrap}
+.hhead .hk{font-family:var(--mono);font-size:10.5px;letter-spacing:.24em;color:var(--pink);text-shadow:0 0 10px #ff4f8b99}
+.hhead b{font-size:16px;color:#f0f6fc;letter-spacing:.06em;text-shadow:0 0 14px #a371f766}
+.hhead .hs{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.hhead .hs em{font-style:normal;color:var(--cyan)}
+.hcv{position:relative;height:440px}
+.hcv canvas{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:crosshair;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.btip{position:absolute;left:0;top:0;z-index:5;width:max-content;max-width:min(320px,calc(100% - 16px));padding:10px 12px;border:1px solid #47367a;border-radius:10px;background:rgba(11,8,22,.94);
+ -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 10px 30px #000b,0 0 22px #a371f744;font-size:12.5px;line-height:1.5;pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity .15s,transform .15s;visibility:hidden}
+.btip.on{opacity:1;transform:none;visibility:visible}
+.btip.sel{pointer-events:auto}
+.btip .tt-h{display:flex;gap:8px;align-items:center;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.btip .tt-r{font-weight:700;font-size:13px}
+.btip .tt-t{color:#f0f6fc;font-weight:600;font-size:13.5px;margin-top:3px}
+.btip .tt-g{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.btip .tt-g .tg{font-size:11px;padding:1px 6px}
+.btip .tt-m{color:var(--dim);font-size:11.5px;margin-top:6px}
+.btip .tt-go{margin-top:8px;font-size:12.5px;color:#fff;background:#1f6feb;border:0;border-radius:6px;padding:6px 12px;cursor:pointer}
+.hfoot{display:flex;gap:6px 16px;align-items:center;flex-wrap:wrap;padding:0 18px 13px;font-size:11.5px;color:var(--dim)}
+.bfire{flex:1 1 300px;min-width:0;font-family:var(--mono);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#c9d1d9;cursor:pointer}
+.bfire i{font-style:normal;color:var(--yellow);margin-right:4px} .bfire b{font-weight:700;margin-right:6px}
+.bfire.pop{animation:pop .5s}
+@keyframes pop{0%{text-shadow:0 0 12px #fff8;color:#fff}100%{text-shadow:none}}
+.leg{display:flex;gap:4px 12px;flex-wrap:wrap}
+.leg span{white-space:nowrap} .leg i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
+.leg i.dl{width:14px;height:0;border-radius:0;border-top:1.5px dashed #c39bff;vertical-align:3px}
+.row.nodeon{background:linear-gradient(90deg,#a371f71f,transparent 70%)}
 canvas#net{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
-@media (max-width:640px){canvas#net{opacity:.85}}
 footer{margin-top:18px;font-size:12.5px;color:var(--dim);line-height:1.7;padding:0 4px}
 footer .srcs{font-family:var(--mono);font-size:11px;margin-top:8px;display:flex;flex-wrap:wrap;gap:4px 12px}
-footer .srcs span{white-space:nowrap}
+footer .srcs span{white-space:nowrap} footer .srcs span.wr{white-space:normal}
 .disc{margin-top:10px;color:#9aa4ae}
+.pad{height:14px}
 @media (max-width:640px){
- .wrap{padding-left:10px;padding-right:10px}
- .stats{grid-template-columns:repeat(3,1fr);row-gap:12px;padding-top:8px}
- .stat .num{font-size:24px}
- .stat .lbl{font-size:10px;letter-spacing:.06em}
- h1{font-size:20px}
- .mood{font-size:13.5px}
- .row{padding:12px 12px;gap:8px}
- .ttl{font-size:15px}
- .why{font-size:13px}
- .phead{padding:12px 12px 4px} .phead h2{font-size:18px} .phead p{font-size:12px} .tabs{margin:8px 12px 0;padding:6px} .tab{padding:4px 9px}
- header{padding-top:12px} .meta{font-size:11px}
+ .wrap{padding-left:10px;padding-right:10px} nav.top{margin:0 -10px;padding-left:6px;padding-right:6px}
+ .navin{gap:0} .nt{flex:1 1 auto;padding:9px 4px 10px;font-size:13px;text-align:center} .nt .pd{margin-left:3px;width:5px;height:5px}
+ .stats{grid-template-columns:repeat(3,1fr);row-gap:12px;padding-top:12px}
+ .stat .num{font-size:22px} .stat .lbl{font-size:10px;letter-spacing:.04em}
+ h1{font-size:20px} header{padding-top:12px} .meta{font-size:11px} .mood{font-size:13.5px}
+ .row{padding:12px 12px;gap:8px} .ttl{font-size:15px} .why{font-size:13px}
+ .phead{padding:12px 12px 4px} .phead h2{font-size:18px} .phead p{font-size:12px}
+ .tabs{margin:8px 12px 0;padding:6px} .tab{padding:4px 9px}
  .ptop .search{width:120px}
- .imp{display:none}
- .row.open .imp{display:block}
+ .imp{display:none} .row.open .imp{display:block}
+ .cards{grid-template-columns:1fr;padding:12px 12px 0} .card .big{font-size:24px}
+ .bench,.summ{margin-left:12px;margin-right:12px} h3.sec{margin-left:12px}
+ table.t{width:calc(100% - 24px);margin:0 12px;font-size:12px} table.t td,table.t th{padding:6px 4px}
+ .chart{margin:12px 12px 0}
+ .side{min-width:58px} .px{font-size:14px}
+ .nt.lockb{flex:0 0 auto;padding:9px 6px 10px;font-size:12px}
+ .hero{margin-top:12px;border-radius:12px} .hhead{padding:11px 14px 0} .hhead b{font-size:15px} .hhead .hs{margin-left:0;width:100%;font-size:10.5px}
+ .hfoot{padding:2px 14px 12px;font-size:11px} .bfire{flex-basis:100%;font-size:11.5px}
 }
-@media (prefers-reduced-motion:reduce){.row{animation:none;opacity:1;transform:none}h1 .dot{animation:none}}
+@media (prefers-reduced-motion:reduce){.row{animation:none;opacity:1;transform:none}h1 .dot{animation:none}.bfire.pop{animation:none}.btip{transition:none}.lk-orb i{animation:none}}
 </style>
 </head>
 <body>
+<div class="lock" id="lock" hidden>
+  <form class="lk" id="lkf">
+    <div class="lk-orb" aria-hidden="true"><i></i><i></i></div>
+    <div class="lk-k">NEURAL MAP · PRIVATE</div>
+    <h2>A股每日看板</h2>
+    <p class="lk-s">输入访问密码</p>
+    <input id="lkp" type="password" autocomplete="current-password" placeholder="访问密码" aria-label="访问密码">
+    <label class="lk-r"><input type="checkbox" id="lkr"> 在此设备上记住</label>
+    <button id="lkb" type="submit">解锁</button>
+    <div class="lk-e" id="lke" role="alert"></div>
+    <div class="lk-n">数据经 AES-256 加密，只在输入正确密码后于本机解密</div>
+  </form>
+</div>
 <div class="wrap">
+  <nav class="top"><div class="navin" id="nav"></div></nav>
   <section class="stats" id="stats"></section>
+  <section class="hero" id="hero" hidden>
+    <i class="cr tl"></i><i class="cr tr"></i><i class="cr bl"></i><i class="cr br"></i>
+    <div class="hhead"><span class="hk">NEURAL MAP</span><b>热点神经网络</b><span class="hs" id="hsub"></span></div>
+    <div class="hcv" id="hcv"><canvas id="brain" role="img" aria-label="热点神经网络：资讯来源经研判连接到当日热点"></canvas><div class="btip" id="btip"></div></div>
+    <div class="hfoot"><div class="bfire" id="bfire" title="点击查看这条热点"></div><div class="leg" id="bleg"></div></div>
+  </section>
   <header>
-    <h1><span class="dot"></span>A股盘前热点 · Top 20</h1>
+    <h1><span class="dot"></span><span id="h1"></span></h1>
     <div class="meta" id="meta"></div>
+    <div id="ex"></div>
     <div class="mood" id="mood"></div>
+    <div id="note"></div>
   </header>
   <div class="strip" id="strip"></div>
   <div class="snapt" id="snapt"></div>
   <section class="panel" id="panel">
     <canvas id="net"></canvas>
-    <div class="ptop"><span class="ico"></span><span class="t">Trending</span><input class="search" id="q" placeholder="/ 搜索关键词" aria-label="搜索"></div>
-    <div class="phead"><h2>今日热点</h2><p id="sub"></p></div>
-    <div class="tabs" id="tabs">
-      <span class="tab on" data-f="all">全部</span><span class="tab" data-f="bull">利好</span><span class="tab" data-f="bear">利空</span><span class="tab" data-f="mixed">多空交织</span>
-      <span class="sp" id="tabsp"></span>
-    </div>
-    <ol class="list" id="list"></ol>
+    <div class="ptop"><span class="ico"></span><span class="t" id="ptt">Trending</span><input class="search" id="q" placeholder="/ 搜索关键词" aria-label="搜索"></div>
+    <div id="body"></div>
   </section>
   <footer id="foot"></footer>
 </div>
-<script id="embedded" type="application/json">{"date": "2026-10-08", "window": {"start": "2026-10-08 15:00", "end": "2026-10-08 23:40"}, "generated": "2026-10-08 23:46", "mood": "今天A股节后首日放量下跌（沪指 -0.79% 报3811.90，创业板指 -3.15%，科创50 -4.82%，成交1.68万亿），AI硬件和光通信领跌，油气、电池、航运、银行逆势走强；晚间外围偏避险：油价大涨、海外长债收益率走高、美联储官员放鹰，中概股和A50期货小幅走弱，明天开盘情绪大概率偏谨慎，资金继续往资源、能源方向切换。", "trading_note": "明天10月9日（周五）是A股交易日（已核对深交所交易日历）；10月10日（周六）休市，下一交易日为10月12日（周一）。", "disclaimer": "内容仅供参考，不构成投资建议。", "counters": {"sources": 8, "raw": 2769, "events": 1255, "chars": 174253, "top": 20}, "source_status": [{"key": "cls", "name": "财联社电报", "ok": true, "n": 322}, {"key": "eastmoney", "name": "东方财富快讯", "ok": true, "n": 337}, {"key": "sina", "name": "新浪财经7x24", "ok": true, "n": 1286}, {"key": "wallstreetcn", "name": "华尔街见闻", "ok": true, "n": 248}, {"key": "stcn", "name": "证券时报快讯", "ok": true, "n": 193}, {"key": "govcn", "name": "中国政府网", "ok": true, "n": 1}, {"key": "pbc", "name": "中国人民银行", "ok": true, "n": 1}, {"key": "eastmoney_ann", "name": "上市公司公告", "ok": true, "n": 382}], "snapshot": [{"label": "道指", "last": 50980.7695, "chg_pct": -0.39, "time": "2026-10-08 23:37:26"}, {"label": "纳指", "last": 27375.0212, "chg_pct": -0.59, "time": "2026-10-08 23:37:33"}, {"label": "标普500", "last": 7771.7598, "chg_pct": -0.38, "time": "2026-10-08 23:37:26"}, {"label": "金龙指数", "last": 5573.23, "chg_pct": -1.15, "time": "2026-10-08 23:37:22"}, {"label": "A50期货", "last": 13696.34, "chg_pct": -0.15, "time": "2026-10-08 23:37:35"}, {"label": "COMEX黄金", "last": 4138.513, "chg_pct": -0.05, "time": "2026-10-08 23:37:35"}, {"label": "WTI原油", "last": 92.782, "chg_pct": 5.1, "time": "2026-10-08 23:37:35"}, {"label": "USD/CNH", "last": 6.7059, "chg_pct": 0.05, "time": "2026-10-08 23:37:31"}], "snapshot_time": "2026-10-08 23:37:35", "next_trading_days": ["2026-10-09", "2026-10-12", "2026-10-13"], "items": [{"rank": 1, "title": "央行发布《关于人民币汇率的政策立场》", "why": "今天17:48央行以长文阐明汇率立场：中国“从不搞竞争性货币贬值”，不预设汇率目标，重点防范短期急剧贬值，同时直接反驳“人民币低估”的说法。这有助于稳定汇率预期，也是在为中美、中欧经贸博弈定调。", "impact": "利好：外资偏好的核心资产（银行、消费龙头）和人民币资产，以及外币负债较多的航空公司；对依赖贬值逻辑的出口链偏中性。", "sentiment": "bull", "bull": ["人民币资产", "银行", "消费龙头", "航空"], "bear": [], "sources": [{"name": "中国人民银行", "url": "https://www.pbc.gov.cn/goutongjiaoliu/113456/113469/2026100816231113295/index.html"}]}, {"rank": 2, "title": "国际油价大涨：布伦特突破105美元，WTI日内涨超5%", "why": "海湾地区航运遇袭，加上市场担心美国飓风导致石油停产，WTI涨约5.5%至93美元上方，布伦特报105.7美元。伊朗称仍在评估美方“七日内重开霍尔木兹海峡”的提议；国内能化夜盘甲醇收涨7.17%、LPG涨5.84%。", "impact": "利好：油气开采与油服（中国海油、中国石油、中海油服）、煤化工替代；利空：航空、炼化下游、化纤和塑料加工。", "sentiment": "mixed", "bull": ["油气开采", "油服", "煤化工"], "bear": ["航空", "炼化下游", "化纤"], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuptat7513478.shtml"}, {"name": "华尔街见闻", "url": "https://wallstreetcn.com/livenews/3175613"}, {"name": "华尔街见闻", "url": "https://wallstreetcn.com/livenews/3175716"}]}, {"rank": 3, "title": "光芯片“FCC限制”传闻继续发酵，龙头公司集体回应", "why": "摩根士丹利一份纪要称美国FCC可能从3.2T光模块开始限制、要求65%的BOM来自美国，今天A股光通信重挫（源杰科技、长光华芯20cm跌停，东山精密跌停）。晚间东山精密、长光华芯回应称这只是非官方的政策讨论，3.2T要到2028-2029年才放量。美股光通信盘中同步走弱，费城半导体指数跌超2%。", "impact": "短线利空：CPO和光模块（中际旭创、新易盛、天孚通信、源杰科技）；明天看回应能否止跌。", "sentiment": "bear", "bull": [], "bear": ["光模块/CPO", "光芯片"], "sources": [{"name": "华尔街见闻", "url": "https://wallstreetcn.com/livenews/3175524"}, {"name": "财联社", "url": "https://www.cls.cn/detail/2499744"}, {"name": "华尔街见闻", "url": "https://wallstreetcn.com/livenews/3175677"}]}, {"rank": 4, "title": "美联储沃勒：仍需进一步加息；英国30年期国债收益率创1998年来新高", "why": "沃勒称通胀仍高，AI建设和能源冲击推高通胀，预计还要加息（点阵图或指向2027年初加息）。英国30年期国债收益率升至6.047%，美国30年期盘中最高5.73%。全球利率上行会压制高估值成长股。", "impact": "利空：高估值科技和创新药等成长板块；相对利好：银行、高股息红利资产。", "sentiment": "bear", "bull": ["银行", "高股息"], "bear": ["高估值成长", "创新药"], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupaez7624783.shtml"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuphnx7599775.shtml"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuphnz4352975.shtml"}]}, {"rank": 5, "title": "外围盘面：美股低开走弱，中概普跌，A50期货小跌，恒生科技创近两年新低", "why": "截至北京时间23:37（美股还在交易中），道指 -0.39%，纳指 -0.59%，标普500 -0.38%，纳斯达克中国金龙指数 -1.15%（文远知行、小马智行跌超5%），富时中国A50期货 -0.15%。港股恒生科技收跌2.89%，创2024年9月26日以来新低。离岸人民币约6.706。", "impact": "明天A股开盘偏弱，港股科技和半导体映射承压。", "sentiment": "bear", "bull": [], "bear": ["港股科技", "半导体映射"], "sources": [{"name": "新浪财经行情接口（hq.sinajs.cn）", "url": ""}, {"name": "东方财富", "url": "https://finance.eastmoney.com/a/202610083890012570.html"}, {"name": "华尔街见闻", "url": "https://wallstreetcn.com/livenews/3175286"}]}, {"rank": 6, "title": "一汽、丰田、广汽签署三方战略联盟：广汽拟发行股份收购一汽丰田50%股权", "why": "这是央地车企之间少见的大型合资股权整合。交易完成后，一汽成为广汽重要战略股东，两家丰田合资公司将在研发、采购、生产、销售上协同，对广汽的规模和盈利影响较大。", "impact": "利好：广汽集团、汽车整车板块的国企整合预期；需关注是否停牌及具体交易作价。", "sentiment": "bull", "bull": ["广汽集团", "汽车整车"], "bear": [], "sources": [{"name": "证券时报", "url": "https://www.stcn.com/article/detail/4208299.html"}]}, {"rank": 7, "title": "上海国盛拟以190.99亿元增资华虹集团", "why": "增资后，国盛对华虹集团的直接持股从15.29%升至41.66%，间接持有华虹公司的比例升至10.22%。上海国资真金白银加码晶圆制造，对今天被情绪错杀的半导体板块是一定支撑。", "impact": "利好：华虹公司（688347）、上海国资半导体链。", "sentiment": "bull", "bull": ["华虹公司", "晶圆制造"], "bear": [], "sources": [{"name": "证券时报", "url": "https://www.stcn.com/article/detail/4208360.html"}]}, {"rank": 8, "title": "油运运价再创纪录：美湾至亚太VLCC运费新高，马士基燃油附加费上调至20%", "why": "阿格斯数据显示，美湾至亚太的VLCC包干运费涨至8100万美元，是2017年有该数据以来最高；马士基10月12日起把紧急燃油附加费上调到20%。今天中远海能、招商南油已涨停，基本面在继续强化。", "impact": "利好：油运（中远海能、招商南油、招商轮船）；利空：外贸货主和航空。", "sentiment": "bull", "bull": ["油运"], "bear": ["外贸货主"], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuphnx7584605.shtml"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupafc4329081.shtml"}]}, {"rank": 9, "title": "三季报预告首批密集披露，半导体、PCB、有机硅亮眼", "why": "晶晨股份前三季度净利预增80.58%-87.74%，全年营收有望突破100亿；行云科技预计前三季度净利2.4亿-2.9亿元，同比扭亏，服务器业务爆发；本川智能预增190%-335%；东岳硅材预计净利5.47亿-5.67亿元；广汇能源预增166.83%-176.71%。业绩期会给AI硬件提供基本面对冲。", "impact": "利好：晶晨股份、行云科技、本川智能、东岳硅材（有机硅涨价链）、广汇能源。", "sentiment": "bull", "bull": ["半导体", "PCB", "有机硅"], "bear": [], "sources": [{"name": "财联社", "url": "https://www.cls.cn/detail/2499422"}, {"name": "财联社", "url": "https://www.cls.cn/detail/2499835"}, {"name": "东方财富", "url": "https://data.eastmoney.com/notices/detail/600256/AN202610081830208754.html"}]}, {"rank": 10, "title": "锂电链：固态电池逆势爆发，但多家公司提示风险；龙蟠科技签下最多56.78万吨磷酸铁锂长单", "why": "节前发布的《新型电池产业发展“十五五”规划》在持续发酵。龙蟠科技子公司与吉曜通行约定2026-2030年供应37.86-56.78万吨磷酸铁锂；广期所就氢氧化锂期货、期权征求意见。另一方面，维科技术、金龙羽、上海洗霸发公告提示固态电池业务占比小、尚未形成稳定收入，短线炒作有降温风险。", "impact": "利好：龙蟠科技、锂盐及磷酸铁锂；警惕：概念股高位分化。", "sentiment": "mixed", "bull": ["磷酸铁锂", "锂盐"], "bear": ["固态电池概念高位"], "sources": [{"name": "财联社", "url": "https://www.cls.cn/detail/2499724"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupaez7603952.shtml"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupaez7650643.shtml"}]}, {"rank": 11, "title": "台积电三季度营收同比增长51%；格芯与台积电签20亿美元硅中介层协议", "why": "AI基础设施需求依旧强劲，说明算力景气度没有被传闻改变；格芯将在美国为台积电CoWoS先进封装供应硅中介层，先进封装扩产在加速。", "impact": "利好：先进封装和算力芯片链（长电科技、通富微电），可部分对冲第3条的情绪冲击。", "sentiment": "bull", "bull": ["先进封装", "算力芯片"], "bear": [], "sources": [{"name": "华尔街见闻", "url": "https://wallstreetcn.com/livenews/3175646"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupnuv7531354.shtml"}]}, {"rank": 12, "title": "尊界V800刹车踏板支架断裂测试引发关注，江淮汽车跌停", "why": "懂车帝实测中，3辆车在同一位置出现断裂。尊界晚间声明称未发生用户实际故障，将优化设计并免费升级。这事关华为系高端车的品牌口碑。", "impact": "利空：江淮汽车，以及鸿蒙智行产业链短期情绪。", "sentiment": "bear", "bull": [], "bear": ["江淮汽车", "鸿蒙智行链"], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupnuv7573326.shtml"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuphnx7639772.shtml"}]}, {"rank": 13, "title": "风电订单放量：时代新材三季度签约叶片合同43.94亿元", "why": "其中陆上风电38.60亿元、海外3.20亿元；远东股份9月中标签约14.12亿元。机构认为风电招标放量叠加欧洲海风催化，行业拐点信号正在积累。", "impact": "利好：风电叶片、整机、海缆（时代新材、东方电缆、金风科技）。", "sentiment": "bull", "bull": ["风电叶片", "海缆", "整机"], "bear": [], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupaez7605227.shtml"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupafc4435497.shtml"}, {"name": "财联社", "url": "https://www.cls.cn/detail/2499457"}]}, {"rank": 14, "title": "中证协：外资持有境内股票4.66万亿元，比去年底增近30%；毕马威：上半年券商营收增约31%", "why": "外资回流和券商业绩高增长是券商板块的基本面支撑；上半年150家券商合计营收3298亿元，净利1387亿元。", "impact": "利好：券商（中信证券、华泰证券、东方财富）。", "sentiment": "bull", "bull": ["券商"], "bear": [], "sources": [{"name": "证券时报", "url": "https://www.stcn.com/article/detail/4207715.html"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuptav4243861.shtml"}]}, {"rank": 15, "title": "世贸组织把2026年全球货物贸易增速预期从1.9%大幅上调至3.9%", "why": "上调主要来自供应链调整和AI领域投资强劲，2027年预计增长4.1%；但中东战事拖累服务贸易，预期下调至3.3%。", "impact": "利好：出口链、AI服务器和PCB、港口（今天广州港公告9月集装箱吞吐量同比增长19.6%）。", "sentiment": "bull", "bull": ["出口链", "AI服务器", "港口"], "bear": [], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupnux4338921.shtml"}]}, {"rank": 16, "title": "民航局印发《国内航线航班评审优化措施》，节后机票价格“跳水”", "why": "新措施按承运人数量、客座率等调控航段准入和航班量，抑制同质化竞争，中长期利好票价；但节后淡季机票裸价低至两三百元，叠加油价大涨，短期成本压力大。", "impact": "中长期利好、短期承压：航空（中国国航、南方航空、春秋航空）。", "sentiment": "mixed", "bull": ["航空(中长期)"], "bear": ["航空(短期)"], "sources": [{"name": "财联社", "url": "https://www.cls.cn/detail/2499759"}, {"name": "华尔街见闻", "url": "https://wallstreetcn.com/livenews/3175699"}]}, {"rank": 17, "title": "橡胶价格创9年新高，60余家轮胎企业集体涨价", "why": "沪胶主力报20145元/吨，年内涨超28%；9月以来轮胎企业发出70多份涨价函，幅度2%-5%，成本传导能力是关键。", "impact": "利好：天然橡胶上游（海南橡胶）；轮胎（赛轮轮胎、玲珑轮胎）短期成本承压、提价对冲。", "sentiment": "mixed", "bull": ["天然橡胶"], "bear": ["轮胎成本"], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuptav4279357.shtml"}]}, {"rank": 18, "title": "世界气象组织：厄尔尼诺将在12月见顶，或为1950年以来最强之一", "why": "持续到2027年2月的概率接近100%，可能扰动全球农产品产量（糖、棕榈油、谷物）和能源需求。", "impact": "利好：农业种植和种业（北大荒、隆平高科）、糖业；关注电力和天然气需求。", "sentiment": "bull", "bull": ["种业", "糖业"], "bear": [], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupafc4317031.shtml"}]}, {"rank": 19, "title": "美国加码量子计算：五角大楼宣布3.5亿美元量子举措，英伟达5年投入10亿美元", "why": "美国国防部与PsiQuantum签署1.5亿美元有条件贷款；英伟达承诺投入10亿美元支持超级智能、量子计算等科研，海外量子主题在升温。", "impact": "利好：A股量子科技主题（如国盾量子）的情绪映射。", "sentiment": "bull", "bull": ["量子科技"], "bear": [], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuptat7508135.shtml"}, {"name": "华尔街见闻", "url": "https://wallstreetcn.com/livenews/3175704"}]}, {"rank": 20, "title": "中欧经贸密集接触：王文涛会见欧委会贸易委员谢夫乔维奇", "why": "商务部副部长凌激同日与欧方会谈，为中欧贸易投资磋商机制第二次例会做准备；何立峰同英国财政大臣视频通话。电动车、光伏等贸易摩擦有望通过对话缓和。", "impact": "潜在利好：对欧出口的新能源车、锂电、光伏（比亚迪、宁德时代）。", "sentiment": "bull", "bull": ["新能源车", "锂电", "光伏"], "bear": [], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuphnx7625455.shtml"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuphnx7563896.shtml"}]}]}</script>
+<script id="embedded" type="application/json">{"enc": {"v": 1, "alg": "AES-256-GCM", "kdf": "PBKDF2-SHA256", "iter": 600000, "salt": "Pcl+9b4bit2nE0nriuyoxA==", "iv": "z89NozT/QhYkF7lw", "ct": "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"}}</script>
 <script>
 (function(){
-const $=s=>document.querySelector(s);
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const SRC_COLORS={'财联社':'#f0524f','新浪财经':'#e3b341','华尔街见闻':'#4493f8','证券时报':'#a371f7','东方财富':'#39c5e6','中国人民银行':'#ff4f8b','中国政府网':'#ff7b72'};
-const srcColor=n=>{for(const k in SRC_COLORS){if(n.indexOf(k)>=0)return SRC_COLORS[k]}return '#8b949e'};
+const srcColor=n=>{for(const k in SRC_COLORS){if(String(n).indexOf(k)>=0)return SRC_COLORS[k]}let h=0;for(const c of String(n))h=(h*31+c.charCodeAt(0))%360;return 'hsl('+h+',60%,62%)'};
 const SENT={bull:['利好','up'],bear:['利空','down'],mixed:['多空交织','flat']};
+const TABS=[['hot','盘前热点','hot'],['am','早盘15支','picks_am'],['pm','午后15支','picks_pm'],['review','收盘复盘','review'],['history','历史','history']];
+const STAGE_DESC={hot:'盘前热点 Top 20',am:'早盘15支关注名单',pm:'午后15支关注名单',review:'收盘复盘',history:'历史表现'};
+let D=null,CUR='hot',NET=null,FLK=null,CD=null;
 
-function load(){
-  return fetch('data/latest.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw 0;return r.json()})
-   .catch(()=>JSON.parse(document.getElementById('embedded').textContent));
+const cls=v=>v==null||isNaN(v)?'flat':v>0?'up':v<0?'down':'flat';
+const pct=(v,d=2)=>v==null||isNaN(v)?'—':(v>0?'+':'')+(+v).toFixed(d)+'%';
+const rate=v=>v==null||isNaN(v)?'—':Math.round(v*100)+'%';
+const price=v=>v==null||isNaN(v)?'—':(+v).toFixed(2);
+const amt=v=>v==null||isNaN(v)?'—':v>=1e8?(v/1e8).toFixed(2)+'亿':v>=1e4?(v/1e4).toFixed(0)+'万':String(v);
+const avg=a=>{a=a.filter(x=>x!=null&&!isNaN(x));return a.length?a.reduce((s,x)=>s+x,0)/a.length:null};
+function bjNow(){const d=new Date(Date.now()+8*3600e3);return {date:d.toISOString().slice(0,10),min:d.getUTCHours()*60+d.getUTCMinutes(),ms:d.getTime()}}
+const toMin=s=>{const[a,b]=String(s).split(':');return +a*60+ +b};
+function quoteUrl(p){const c=String(p.code||'');let ex=(p.exchange||'').toLowerCase();if(!ex)ex=/^6/.test(c)?'sh':/^[03]/.test(c)?'sz':'bj';return ex==='bj'?'https://quote.eastmoney.com/bj/'+c+'.html':'https://quote.eastmoney.com/'+ex+c+'.html'}
+function part(tab){const k=TABS.find(t=>t[0]===tab)[2];const v=D[k];return Array.isArray(v)?(v.length?v:null):v}
+function isEx(tab){const p=part(tab);if(!p)return false;return Array.isArray(p)?p.some(r=>r.example):!!p.example}
+
+function load(){return fetch('data/latest.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw 0;return r.json()}).catch(()=>JSON.parse($('#embedded').textContent))}
+function fmtCount(n,o){o=o||{};const d=o.dec||0;let s=d?Math.abs(n).toFixed(d):Math.round(Math.abs(n)).toLocaleString('en-US');return (n<0?'-':(o.sign&&n>0?'+':''))+s+(o.suf||'')}
+function countUp(el,to,o,ms){const t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-p,3);el.textContent=fmtCount(to*e,o);if(p<1)requestAnimationFrame(f)})(t0)}
+function counters(list){
+  $('#stats').innerHTML=list.map(s=>'<div class="stat"><div class="lbl">'+esc(s[0])+'</div><div class="num">'+(s[1]==null?'—':'0')+'</div></div>').join('');
+  $$('.stat .num').forEach((el,i)=>{const s=list[i];if(s[1]==null)return;const o=s[2]||{};if(o.color)el.classList.add(cls(s[1]));if(RM.matches){el.textContent=fmtCount(+s[1],o);return}setTimeout(()=>countUp(el,+s[1],o,1300+i*150),120*i)});
 }
-function fmtNum(n){return Math.round(n).toLocaleString('en-US')}
-function countUp(el,to,ms){
-  const t0=performance.now();
-  (function f(t){const p=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-p,3);el.textContent=fmtNum(to*e);if(p<1)requestAnimationFrame(f)})(t0);
-}
-function render(d){
-  const C=d.counters||{};
-  const stats=[['新闻源',C.sources],['抓取条数',C.raw],['去重事件',C.events],['读取字数',C.chars],['入选 TOP20',C.top]];
-  $('#stats').innerHTML=stats.map(s=>'<div class="stat"><div class="lbl">'+esc(s[0])+'</div><div class="num" data-to="'+(+s[1]||0)+'">0</div></div>').join('');
-  document.querySelectorAll('.stat .num').forEach((el,i)=>setTimeout(()=>countUp(el,+el.dataset.to,1400+i*150),150*i));
-  const ws=d.window.start||'',we=d.window.end||'';const weS=ws.slice(0,10)===we.slice(0,10)?we.slice(11):we;
-  $('#meta').textContent='窗口 '+ws+' → '+weS+' 北京时间 · 生成 '+(d.generated||'').slice(5);
-  $('#mood').textContent=d.mood||'';
-  $('#strip').innerHTML=(d.snapshot||[]).map(s=>{
-    const c=s.chg_pct, cls=c>0?'up':c<0?'down':'flat';
-    const v=s.last>=1000?s.last.toLocaleString('en-US',{maximumFractionDigits:2}):(+s.last).toFixed(s.last<20?4:2);
-    return '<div class="tick"><div class="n">'+esc(s.label)+'</div><div class="v">'+esc(v)+'</div><div class="c '+cls+'">'+(c==null?'—':(c>0?'+':'')+c.toFixed(2)+'%')+'</div></div>'}).join('');
-  $('#snapt').textContent=d.snapshot_time?('行情快照 '+d.snapshot_time+' 北京时间（来源：新浪财经行情）'):'';
-  $('#sub').textContent='从 '+fmtNum(C.events||0)+' 个去重事件中按影响力、意外性、时效、权威性筛选';
-  const items=d.items||[];
-  $('#list').innerHTML=items.map((it,i)=>{
-    const s=SENT[it.sentiment]||SENT.mixed;
-    const link=(it.sources||[]).find(x=>x.url);
-    const kws=[].concat(it.bull||[],it.bear||[]);
-    const why=wrapKw(esc(it.why),it);
-    const groups=[];(it.sources||[]).forEach(x=>{let g=groups.find(g=>g.name===x.name);if(!g){g={name:x.name,urls:[]};groups.push(g)}if(x.url)g.urls.push(x.url)});
-    const A=(u,t)=>'<a href="'+esc(u)+'" target="_blank" rel="noopener">'+t+'</a>';
-    const tags=groups.map(g=>'<span class="tg src"><i style="background:'+srcColor(g.name)+'"></i>'+(g.urls.length?A(g.urls[0],esc(g.name)):esc(g.name))
-        +(g.urls.length>1?g.urls.slice(1).map((u,k)=>' '+A(u,'<sup>'+(k+2)+'</sup>')).join(''):'')+'</span>').join('')
-      +(it.bull||[]).map(t=>'<span class="tg bull">利好·'+esc(t)+'</span>').join('')
-      +(it.bear||[]).map(t=>'<span class="tg bear">利空·'+esc(t)+'</span>').join('');
-    return '<li class="row" data-s="'+esc(it.sentiment)+'" style="animation-delay:'+(0.25+i*0.05)+'s">'
-      +'<div class="main"><div class="ttl"><span class="ic"></span>'+(link?'<a href="'+esc(link.url)+'" target="_blank" rel="noopener">'+esc(it.title)+'</a>':esc(it.title))+'</div>'
-      +'<div class="why">'+why+'</div><div class="imp">'+esc(it.impact)+'</div><div class="tags">'+tags+'</div></div>'
-      +'<div class="side"><span class="badge'+(it.rank<=3?' top3':'')+'">#'+it.rank+'</span><span class="senti '+s[1]+'">'+s[0]+'</span></div></li>'}).join('');
-  $('#tabsp').textContent=items.length+' items';
-  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));
-    const f=t.dataset.f;document.querySelectorAll('.row').forEach(r=>r.classList.toggle('hide',f!=='all'&&r.dataset.s!==f));
-    setTimeout(layoutNet,30);
-  });
-  document.querySelectorAll('.row').forEach(r=>r.addEventListener('click',e=>{if(e.target.closest('a'))return;r.classList.toggle('open');setTimeout(layoutNet,30)}));
-  const q=$('#q');q.oninput=()=>{const v=q.value.trim().toLowerCase();document.querySelectorAll('.row').forEach(r=>r.classList.toggle('hide',!!v&&r.textContent.toLowerCase().indexOf(v)<0));setTimeout(layoutNet,30)};
-  addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==q){e.preventDefault();q.focus()}});
-  const st=d.source_status||[];
-  $('#foot').innerHTML=(d.trading_note?'<div>📅 '+esc(d.trading_note)+'</div>':'')
-    +'<div class="srcs">'+st.map(s=>'<span class="'+(s.ok?'down':'up')+'">'+(s.ok?'●':'○')+' '+esc(s.name)+' '+(s.ok?s.n:'失败')+'</span>').join('')+'</div>'
-    +'<div class="disc">'+esc(d.disclaimer)+'</div>';
-  initNet(items);flicker();
-}
-// wrap keywords (numbers/percent and a few domain words) in spans for the flicker effect
-function wrapKw(html,it){
-  const words=['央行','油价','布伦特','加息','光模块','光芯片','固态电池','华虹','广汽','VLCC','风电','外资','券商','台积电','厄尔尼诺','量子','橡胶','跌停','涨停','新高','扭亏','预增'];
+let KW=['加息','降息','跌停','涨停','新高','扭亏','预增','竞价','放量','龙头','订单','回购','增持','减持'];
+function wrapKw(html){
+  const words=KW;
   let out=html.replace(/(\d+(?:\.\d+)?(?:%|亿元|亿|万吨|美元))/g,'<span class="kw">$1</span>');
-  words.forEach(w=>{out=out.replace(new RegExp('(^|[^>])('+w+')(?![^<]*<\\/span>)'),'$1<span class="kw">$2</span>')});
+  words.forEach(w=>{w=w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');out=out.replace(new RegExp('(^|[^>])('+w+')(?![^<]*<\\/span>)'),'$1<span class="kw">$2</span>')});
   return out;
 }
-function flicker(){
-  const kws=[...document.querySelectorAll('.kw')];if(!kws.length)return;
-  const cls=['h1','h2','h3','h4'];
-  setInterval(()=>{
-    for(let k=0;k<3;k++){const el=kws[Math.random()*kws.length|0],c=cls[Math.random()*4|0];
-      el.classList.add(c);setTimeout(()=>el.classList.remove(c),500+Math.random()*900);}
-  },650);
+function setHead(title,meta,mood,note){$('#h1').textContent=title;$('#meta').textContent=meta||'';$('#mood').textContent=mood||'';$('#note').innerHTML=note?'<div class="note">'+esc(note)+'</div>':''}
+function exBanner(tab){$('#ex').innerHTML=isEx(tab)?'<div class="exb">⚠ 示例数据 · EXAMPLE<small>本页为版式预览，股票名称取自今晚热点，价格、涨跌、收益均为虚构，不代表任何真实行情或推荐。</small></div>':''}
+function strip(list,t){$('#strip').innerHTML=(list||[]).map(s=>{const c=s.chg_pct;const v=s.last>=1000?s.last.toLocaleString('en-US',{maximumFractionDigits:2}):(+s.last).toFixed(s.last<20?4:2);
+  return '<div class="tick"><div class="n">'+esc(s.label||s.name)+'</div><div class="v">'+esc(v)+'</div><div class="c '+cls(c)+'">'+pct(c)+'</div></div>'}).join('');$('#snapt').textContent=t||''}
+
+function placeholder(tab){
+  const now=bjNow(),sch=(D.schedule||{})[tab==='history'?'review':tab]||'';
+  let t,s=STAGE_DESC[tab]+'尚未生成';
+  if(D.date===now.date){
+    if(sch&&now.min<toMin(sch)){t='今日 '+sch+' 发布';s=STAGE_DESC[tab]+'将在交易日 '+sch+' 自动生成并更新到这里';}
+    else{t='今日 '+sch+' 应已发布';s='数据暂未生成，可能仍在处理中，稍后刷新';}
+  }else{t=(D.date||'').slice(5)+' 暂无此数据';s=sch?('每个交易日 '+sch+' 发布'+STAGE_DESC[tab]):s}
+  const prev=['review','pm','am','hot'].find(k=>k!==tab&&part(k));
+  return '<div class="ph"><div class="ph-t">'+esc(t)+'</div><div class="ph-s">'+esc(s)+'</div><div class="ph-c" id="cd"></div>'
+   +(prev?'<span class="ph-r" data-go="'+prev+'">查看'+esc(TABS.find(x=>x[0]===prev)[1])+' →</span>':'')+'</div>';
 }
-// network overlay: source nodes drift and link to the rows they support
-let NET=null;
-function initNet(items){
-  const cv=$('#net'),ctx=cv.getContext('2d');
-  const names=[...new Set(items.flatMap(it=>(it.sources||[]).map(s=>s.name.replace(/（.*$/,''))))];
-  const nodes=names.map((n,i)=>({name:n,color:srcColor(n),ax:0.45+0.4*Math.random(),ay:(i+0.5)/names.length,ph:Math.random()*6.28}));
-  const LABELS=['crawl','dedupe','rank','parse','利好','利空','agents.','fetch','merge'];
-  NET={cv,ctx,nodes,items,rows:[],labels:LABELS.map(t=>({t,n:Math.random()*nodes.length|0,life:0}))};
-  layoutNet();addEventListener('resize',layoutNet);
-  requestAnimationFrame(drawNet);
+function startCountdown(tab){
+  clearInterval(CD);const now=bjNow(),sch=(D.schedule||{})[tab==='history'?'review':tab];
+  if(!sch||D.date!==now.date||now.min>=toMin(sch))return;
+  const tgt=Date.parse(D.date+'T'+sch+':00+08:00');
+  const f=()=>{const el=$('#cd');if(!el){clearInterval(CD);return}let s=Math.max(0,Math.round((tgt-Date.now())/1000));
+    el.textContent='距发布 '+[s/3600|0,(s%3600)/60|0,s%60].map(x=>String(x).padStart(2,'0')).join(':');if(!s)clearInterval(CD)};
+  f();CD=setInterval(f,1000);
+}
+
+// ---------- tab renderers ----------
+function renderHot(){
+  const H=D.hot,C=(H&&H.counters)||{};
+  counters([['新闻源',C.sources],['抓取条数',C.raw],['去重事件',C.events],['读取字数',C.chars],['入选 TOP20',H?C.top:null]]);
+  if(!H){setHead('A股盘前热点 · Top 20','交易日 '+D.date,'');strip([]);return placeholder('hot')}
+  const ws=H.window.start||'',we=H.window.end||'',weS=ws.slice(0,10)===we.slice(0,10)?we.slice(11):we;
+  setHead('A股盘前热点 · Top 20','窗口 '+ws+' → '+weS+' 北京时间',H.mood,H.stale?('这是 '+H.date+' 生成的上一期热点（试运行/前一交易日），今日版将在 '+((D.schedule||{}).hot||'9:02')+' 更新。'):'');
+  strip(H.snapshot,H.snapshot_time?('行情快照 '+H.snapshot_time+' 北京时间（来源：新浪财经行情）'):'');
+  const items=H.items||[];
+  return '<div class="phead"><h2>今日热点</h2><p>从 '+fmtCount(C.events||0)+' 个去重事件中按影响力、意外性、时效、权威性筛选</p></div>'
+   +'<div class="tabs" id="flt"><span class="tab on" data-f="all">全部</span><span class="tab" data-f="bull">利好</span><span class="tab" data-f="bear">利空</span><span class="tab" data-f="mixed">多空交织</span><span class="sp">'+items.length+' items</span></div>'
+   +'<ol class="list">'+items.map((it,i)=>{
+    const s=SENT[it.sentiment]||SENT.mixed,link=(it.sources||[]).find(x=>x.url);
+    const groups=[];(it.sources||[]).forEach(x=>{let g=groups.find(g=>g.name===x.name);if(!g){g={name:x.name,urls:[]};groups.push(g)}if(x.url)g.urls.push(x.url)});
+    const A=(u,t)=>'<a href="'+esc(u)+'" target="_blank" rel="noopener">'+t+'</a>';
+    const tags=groups.map(g=>'<span class="tg src"><i style="background:'+srcColor(g.name)+'"></i>'+(g.urls.length?A(g.urls[0],esc(g.name)):esc(g.name))+(g.urls.length>1?g.urls.slice(1).map((u,k)=>' '+A(u,'<sup>'+(k+2)+'</sup>')).join(''):'')+'</span>').join('')
+      +(it.bull||[]).map(t=>'<span class="tg bull">利好·'+esc(t)+'</span>').join('')+(it.bear||[]).map(t=>'<span class="tg bear">利空·'+esc(t)+'</span>').join('');
+    return '<li class="row nl" id="hot-'+it.rank+'" data-s="'+esc(it.sentiment)+'" data-links="'+esc(groups.map(g=>g.name.replace(/（.*$/,'')).join('|'))+'" style="animation-delay:'+(0.2+i*0.04)+'s">'
+      +'<div class="main"><div class="ttl"><span class="ic"></span>'+(link?A(link.url,esc(it.title)):esc(it.title))+'</div><div class="why">'+wrapKw(esc(it.why))+'</div><div class="imp">'+esc(it.impact)+'</div><div class="tags">'+tags+'</div></div>'
+      +'<div class="side"><span class="badge'+(it.rank<=3?' top3':'')+'">#'+it.rank+'</span><span class="senti '+s[1]+'">'+s[0]+'</span></div></li>'}).join('')+'</ol><div class="pad"></div>';
+}
+function hsChips(p){
+  const hot=(D.hot&&D.hot.items)||[];
+  return (p.hotspot_ranks||[]).map(r=>{const h=hot.find(x=>x.rank===r);const t=h?h.title:'';
+    return '<button class="tg hs" data-hot="'+r+'" title="'+esc(t)+'">↗ 热点#'+r+(t?' · '+esc(t.length>12?t.slice(0,12)+'…':t):'')+'</button>'}).join('');
+}
+function pickRow(p,i,pm){
+  const chg=pm?p.chg_pct:p.auction_chg_pct;
+  const links=(p.hotspot_ranks||[]).map(r=>'热点#'+r);if(p.sector)links.push(p.sector);
+  return '<li class="row nl" id="'+(pm?'pm':'am')+'-'+p.rank+'" data-links="'+esc(links.join('|'))+'" style="animation-delay:'+(0.2+i*0.04)+'s">'
+   +'<div class="main"><div class="ttl"><span class="ic"></span><a href="'+esc(quoteUrl(p))+'" target="_blank" rel="noopener">'+esc(p.name)+'</a><span class="code">'+esc(p.code)+'</span></div>'
+   +'<div class="tags">'+(p.sector?'<span class="tg sec">'+esc(p.sector)+'</span>':'')+hsChips(p)+(!pm&&p.auction_amount!=null?'<span class="tg amt">竞价额 '+amt(p.auction_amount)+'</span>':'')+'</div>'
+   +'<div class="why">'+wrapKw(esc(p.reason))+'</div>'+(p.hotspot_note?'<div class="imp">'+esc(p.hotspot_note)+'</div>':'')
+   +(p.risk?'<div class="risk">⚠ 风险：'+esc(p.risk)+'</div>':'')+'</div>'
+   +'<div class="side"><span class="badge'+(p.rank<=3?' top3':'')+'">#'+p.rank+'</span><span class="px">'+price(p.price)+'</span><span class="chg '+cls(chg)+'">'+pct(chg)+'</span>'
+   +'<span class="sub">'+(pm?'14:45价':'9:25竞价')+'</span>'+(pm&&p.overlaps_am?'<span class="ov">早盘重叠</span>':'')+'</div></li>';
+}
+function renderAM(){
+  const P=D.picks_am,ps=(P&&P.picks)||[];
+  const secs=new Set(ps.map(p=>p.sector).filter(Boolean)),hs=new Set(ps.flatMap(p=>p.hotspot_ranks||[]));
+  const totAmt=ps.reduce((s,p)=>s+(p.auction_amount||0),0);
+  counters([['入选',P?ps.length:null],['平均竞价涨幅',P?avg(ps.map(p=>p.auction_chg_pct)):null,{dec:2,suf:'%',sign:1,color:1}],['关联热点',P?hs.size:null],['覆盖板块',P?secs.size:null],['竞价额(亿)',P&&totAmt?totAmt/1e8:null,{dec:2}]]);
+  strip([]);
+  if(!P){setHead('早盘关注 · 15支','交易日 '+D.date+' · 9:25 集合竞价后发布','');return placeholder('am')}
+  setHead('早盘关注 · '+ps.length+'支','交易日 '+P.date+' · 生成 '+String(P.generated_at||'').slice(11,16)+' · 依据：'+(P.basis||'盘前热点+竞价'),P.market_note);
+  return '<div class="phead"><h2>早盘15支</h2><p>价格为 9:25 集合竞价成交价，涨幅相对昨收；点击 ↗ 热点 跳到对应的盘前热点</p></div><ol class="list">'+ps.map((p,i)=>pickRow(p,i,false)).join('')+'</ol><div class="pad"></div>';
+}
+function renderPM(){
+  const P=D.picks_pm,ps=(P&&P.picks)||[],ap=P&&P.am_performance;
+  const secs=new Set(ps.map(p=>p.sector).filter(Boolean));
+  counters([['入选',P?ps.length:null],['平均涨幅',P?avg(ps.map(p=>p.chg_pct)):null,{dec:2,suf:'%',sign:1,color:1}],['早盘重叠',P?ps.filter(p=>p.overlaps_am).length:null],['覆盖板块',P?secs.size:null],['早盘名单表现',ap?ap.avg_chg_pct:null,{dec:2,suf:'%',sign:1,color:1}]]);
+  if(!P){setHead('午后关注 · 15支','交易日 '+D.date+' · 14:45 发布','');strip([]);return placeholder('pm')}
+  setHead('午后关注 · '+ps.length+'支','交易日 '+P.date+' · 生成 '+String(P.generated_at||'').slice(11,16),P.market_summary);
+  strip((P.indices||[]).map(x=>({label:x.name,last:x.last,chg_pct:x.chg_pct})),P.indices&&P.indices.length?'指数截至 14:45':'');
+  const apHtml=ap?'<div class="cards" style="grid-template-columns:1fr"><div class="card"><div class="h"><b>早盘名单</b> 截至 '+esc(ap.as_of||'14:45')+'（相对 9:25 价）</div><div class="big '+cls(ap.avg_chg_pct)+'">'+pct(ap.avg_chg_pct)+'</div><div class="kv"><span>胜率</span><span>'+rate(ap.win_rate)+(ap.n?' · '+ap.n+'支':'')+'</span></div></div></div>':'';
+  return apHtml+'<div class="phead"><h2>午后15支</h2><p>价格为 14:45 价，涨跌幅相对昨收；紫色标签表示也在早盘名单中</p></div><ol class="list">'+ps.map((p,i)=>pickRow(p,i,true)).join('')+'</ol><div class="pad"></div>';
+}
+function card(L,key){
+  if(!L)return '<div class="card"><div class="h"><b>'+(key==='am'?'早盘15支':'午后15支')+'</b></div><div class="big flat">—</div><div class="bw">当日未生成该名单</div></div>';
+  return '<div class="card nl" data-links="'+(key==='am'?'早盘':'午后')+'"><div class="h"><b>'+esc(L.label||(key==='am'?'早盘15支':'午后15支'))+'</b> · '+esc(L.entry||(key==='am'?'9:25 竞价价':'14:45 价'))+'买入</div>'
+   +'<div class="big '+cls(L.avg_return_pct)+'">'+pct(L.avg_return_pct)+'</div>'
+   +'<div class="kv"><span>胜率</span><span>'+rate(L.win_rate)+(L.wins!=null&&L.n?' ('+L.wins+'/'+L.n+')':'')+'</span></div>'
+   +'<div class="kv"><span>相对沪深300</span><span class="'+cls(L.excess_pct)+'">'+(L.excess_pct==null?'—':(L.excess_pct>0?'+':'')+(+L.excess_pct).toFixed(2)+' pp')+'</span></div>'
+   +(L.median_return_pct!=null?'<div class="kv"><span>中位数</span><span>'+pct(L.median_return_pct)+'</span></div>':'')
+   +'<div class="bw">'+(L.best?'最佳 '+esc(L.best.name)+' <span class="'+cls(L.best.return_pct)+'">'+pct(L.best.return_pct)+'</span>':'')+(L.worst?'<br>最差 '+esc(L.worst.name)+' <span class="'+cls(L.worst.return_pct)+'">'+pct(L.worst.return_pct)+'</span>':'')+'</div></div>';
+}
+function table(L,key){
+  if(!L||!(L.items||[]).length)return '';
+  return '<h3 class="sec">'+(key==='am'?'早盘名单逐只表现':'午后名单逐只表现')+'</h3><div class="tblwrap"><table class="t"><thead><tr><th>#</th><th>名称</th><th>买入</th><th>收盘</th><th>收益</th></tr></thead><tbody>'
+   +L.items.map(x=>'<tr><td class="rk">'+esc(x.rank)+'</td><td class="nm">'+esc(x.name)+'<small>'+esc(x.code)+'</small></td><td>'+price(x.entry_price)+'</td><td>'+price(x.close)+'</td><td class="'+cls(x.return_pct)+'">'+pct(x.return_pct)+'</td></tr>').join('')+'</tbody></table></div>';
+}
+function renderReview(){
+  const R=D.review,L=(R&&R.lists)||{},b=R&&R.benchmark;
+  counters([['早盘均收益',L.am?L.am.avg_return_pct:null,{dec:2,suf:'%',sign:1,color:1}],['早盘胜率',L.am&&L.am.win_rate!=null?L.am.win_rate*100:null,{suf:'%'}],['午后均收益',L.pm?L.pm.avg_return_pct:null,{dec:2,suf:'%',sign:1,color:1}],['午后胜率',L.pm&&L.pm.win_rate!=null?L.pm.win_rate*100:null,{suf:'%'}],['沪深300',b?b.chg_pct:null,{dec:2,suf:'%',sign:1,color:1}]]);
+  strip([]);
+  if(!R){setHead('收盘复盘','交易日 '+D.date+' · 15:20 发布','');return placeholder('review')}
+  setHead('收盘复盘 · '+R.date.slice(5),'交易日 '+R.date+' · 生成 '+String(R.generated_at||'').slice(11,16),'');
+  return '<div class="cards">'+card(L.am,'am')+card(L.pm,'pm')+'</div>'
+   +(b?'<div class="bench">基准 '+esc(b.name||'沪深300')+' 收盘 <b>'+(b.close!=null?(+b.close).toFixed(2):'—')+'</b> <b class="'+cls(b.chg_pct)+'">'+pct(b.chg_pct)+'</b></div>':'')
+   +(R.summary?'<div class="summ">'+wrapKw(esc(R.summary))+((R.lessons||[]).length?'<ul>'+R.lessons.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'')+'</div>':'')
+   +table(L.am,'am')+table(L.pm,'pm')+'<div class="pad"></div>';
+}
+function chart(rows){
+  const n=rows.length,W=Math.max(300,Math.min(900,($('#panel').clientWidth||600)-54)),H=Math.round(Math.min(220,Math.max(170,W*0.32))),pl=40,pr=8,pt=12,pb=24;
+  const vals=rows.flatMap(r=>[r.am_avg_return_pct,r.pm_avg_return_pct,r.csi300_chg_pct]).filter(v=>v!=null);
+  let m=Math.max(1,...vals.map(Math.abs));m=Math.ceil(m);
+  const y=v=>pt+(H-pt-pb)*(1-(v+m)/(2*m)),gw=(W-pl-pr)/n,bw=Math.max(2,Math.min(14,gw*0.32));
+  let s='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="每日平均收益">';
+  [m,m/2,0,-m/2,-m].forEach(v=>{s+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="'+(v?'#1c232c':'#3b4350')+'" stroke-width="1"/><text x="'+(pl-4)+'" y="'+(y(v)+3)+'" fill="#7d8590" font-size="10" text-anchor="end" font-family="monospace">'+(v>0?'+':'')+v.toFixed(1)+'%</text>'});
+  rows.forEach((r,i)=>{const cx=pl+gw*(i+.5);
+    [[r.am_avg_return_pct,-bw/2-1,1],[r.pm_avg_return_pct,bw/2+1,.55]].forEach(([v,off,op])=>{if(v==null)return;const y0=y(0),y1=y(v);s+='<rect x="'+(cx+off-bw/2)+'" y="'+Math.min(y0,y1)+'" width="'+bw+'" height="'+Math.max(1,Math.abs(y1-y0))+'" fill="'+(v>=0?'#f0524f':'#2fbf71')+'" opacity="'+op+'" rx="1"/>'});
+    const step=Math.max(1,Math.ceil(40/gw));if((n-1-i)%step===0)s+='<text x="'+cx+'" y="'+(H-8)+'" fill="#7d8590" font-size="10" text-anchor="middle" font-family="monospace">'+r.date.slice(5)+'</text>'});
+  const pts=rows.map((r,i)=>r.csi300_chg_pct==null?null:[pl+gw*(i+.5),y(r.csi300_chg_pct)]).filter(Boolean);
+  if(pts.length>1)s+='<polyline points="'+pts.map(p=>p.join(',')).join(' ')+'" fill="none" stroke="#39c5e6" stroke-width="1.5"/>';
+  pts.forEach(p=>s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="2" fill="#39c5e6"/>');
+  return s+'</svg>';
+}
+function renderHistory(){
+  const rows=D.history||[],last=rows.slice(-60);
+  const cum=k=>rows.length?(rows.reduce((p,r)=>p*(1+(r[k]||0)/100),1)-1)*100:null;
+  counters([['交易日',rows.length||null],['早盘累计',rows.length?cum('am_avg_return_pct'):null,{dec:2,suf:'%',sign:1,color:1}],['早盘均胜率',rows.length?avg(rows.map(r=>r.am_win_rate))*100:null,{suf:'%'}],['午后累计',rows.length?cum('pm_avg_return_pct'):null,{dec:2,suf:'%',sign:1,color:1}],['午后均胜率',rows.length?avg(rows.map(r=>r.pm_win_rate))*100:null,{suf:'%'}]]);
+  strip([]);
+  if(!rows.length){setHead('历史表现','每日 15:20 复盘后追加一行','');return placeholder('history')}
+  setHead('历史表现 · '+rows.length+'个交易日',rows[0].date+' → '+rows[rows.length-1].date,'累计收益按每日名单平均收益复利计算（等权、不含交易成本），仅用于观察筛选效果。');
+  return '<div class="chart">'+chart(last)+'<div class="legend"><span><i style="background:#f0524f"></i>早盘均收益</span><span><i style="background:#f0524f;opacity:.55"></i>午后均收益</span><span><i style="background:#39c5e6;height:2px;vertical-align:3px"></i>沪深300</span></div></div>'
+   +'<h3 class="sec">每日明细</h3><div class="tblwrap"><table class="t"><thead><tr><th>日期</th><th>早盘</th><th>胜率</th><th>午后</th><th>胜率</th><th>沪深300</th></tr></thead><tbody>'
+   +rows.slice().reverse().map(r=>'<tr class="nl" data-links="历史"><td>'+esc(r.date.slice(5))+'</td><td class="'+cls(r.am_avg_return_pct)+'">'+pct(r.am_avg_return_pct)+'</td><td>'+rate(r.am_win_rate)+'</td><td class="'+cls(r.pm_avg_return_pct)+'">'+pct(r.pm_avg_return_pct)+'</td><td>'+rate(r.pm_win_rate)+'</td><td class="'+cls(r.csi300_chg_pct)+'">'+pct(r.csi300_chg_pct)+'</td></tr>').join('')
+   +'</tbody></table></div><div class="pad"></div>';
+}
+const R={hot:renderHot,am:renderAM,pm:renderPM,review:renderReview,history:renderHistory};
+
+function show(tab,opts){
+  CUR=tab;opts=opts||{};
+  $$('.nt').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
+  exBanner(tab);
+  $('#ptt').textContent={hot:'Trending',am:'Watchlist · AM',pm:'Watchlist · PM',review:'Review',history:'History'}[tab];
+  $('#q').value='';
+  $('#body').innerHTML=R[tab]();
+  startCountdown(tab);
+  $$('#flt .tab').forEach(t=>t.onclick=()=>{$$('#flt .tab').forEach(x=>x.classList.toggle('on',x===t));const f=t.dataset.f;BR.filter=f;brainKick();$$('.row').forEach(r=>r.classList.toggle('hide',f!=='all'&&r.dataset.s!==f));setTimeout(layoutNet,30)});
+  $$('.row').forEach(r=>r.addEventListener('click',e=>{if(e.target.closest('a,button'))return;r.classList.toggle('open');setTimeout(layoutNet,30)}));
+  $$('[data-hot]').forEach(b=>b.onclick=()=>jumpHot(+b.dataset.hot));
+  $$('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
+  if(!opts.keepHash)history.replaceState(null,'','#'+tab);
+  brainShow(tab==='hot');
+  if(tab==='hot')$$('#body .row[id^="hot-"]').forEach(r=>{const rk=+r.id.slice(4);r.addEventListener('mouseenter',()=>brainHover(rk,true));r.addEventListener('mouseleave',()=>brainHover(rk,false))});
+  initNet();flicker();
+  if(!opts.noScroll)window.scrollTo({top:0});
+}
+function go(tab){show(tab)}
+function jumpHot(r){
+  show('hot',{noScroll:true});
+  setTimeout(()=>{const el=document.getElementById('hot-'+r);if(!el)return;el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash')},80);
+}
+function defaultTab(){
+  const h=location.hash.slice(1);if(TABS.some(t=>t[0]===h))return h;
+  return ['review','pm','am','hot'].find(k=>part(k))||'hot';
+}
+function flicker(){
+  clearInterval(FLK);const kws=$$('.kw');if(!kws.length)return;const c=['h1','h2','h3','h4'];
+  FLK=setInterval(()=>{for(let k=0;k<3;k++){const el=kws[Math.random()*kws.length|0],x=c[Math.random()*4|0];el.classList.add(x);setTimeout(()=>el.classList.remove(x),500+Math.random()*900)}},650);
+}
+// ---------- network overlay ----------
+function initNet(){
+  const cv=$('#net');
+  const names=[...new Set($$('.nl').flatMap(e=>(e.dataset.links||'').split('|').filter(Boolean)))].slice(0,24);
+  const nodes=names.map((n,i)=>({name:n,color:/^热点#/.test(n)?'#39c5e6':srcColor(n),ax:0.45+0.4*Math.random(),ay:(i+0.5)/Math.max(1,names.length),ph:Math.random()*6.28}));
+  const LABELS=['crawl','dedupe','rank','parse','利好','利空','agents.','fetch','merge','auction','review'];
+  const first=!NET;
+  NET={cv,ctx:cv.getContext('2d'),nodes,rows:[],labels:LABELS.map(t=>({t,n:Math.random()*Math.max(1,nodes.length)|0,life:0}))};
+  layoutNet();setTimeout(layoutNet,900);
+  if(first){addEventListener('resize',layoutNet);requestAnimationFrame(drawNet)}
 }
 function layoutNet(){
   if(!NET)return;const {cv}=NET,p=$('#panel'),dpr=Math.min(2,devicePixelRatio||1);
   const W=p.clientWidth,H=p.clientHeight;cv.width=W*dpr;cv.height=H*dpr;NET.ctx.setTransform(dpr,0,0,dpr,0,0);NET.W=W;NET.H=H;
   const pr=p.getBoundingClientRect();
-  NET.rows=[...document.querySelectorAll('.row')].map((r,i)=>{if(r.classList.contains('hide'))return null;const b=r.querySelector('.badge').getBoundingClientRect();
-    return {x:b.left-pr.left-6,y:b.top-pr.top+b.height/2,srcs:(NET.items[i].sources||[]).map(s=>s.name.replace(/（.*$/,''))}}).filter(Boolean);
+  const narrow=W<640;
+  NET.rows=$$('.nl').filter(e=>!e.classList.contains('hide')&&e.offsetParent&&(!narrow||e.querySelector('.badge'))).map(e=>{const bd=e.querySelector('.badge'),a=(bd||e).getBoundingClientRect();
+    return {x:bd?(narrow?a.right-pr.left+3:a.left-pr.left-6):a.right-pr.left-8,y:bd?a.top-pr.top+a.height/2:a.top-pr.top+Math.min(a.height/2,18),srcs:(e.dataset.links||'').split('|')}});
 }
 function drawNet(t){
-  const {ctx,nodes,rows,W,H}=NET;ctx.clearRect(0,0,W,H);
-  const narrow=W<640;
-  nodes.forEach((n,i)=>{n.x=narrow?W-34+8*Math.sin(t/3000+n.ph):W*(n.ax+0.05*Math.sin(t/6000+n.ph));n.y=H*(0.06+0.9*n.ay)+18*Math.sin(t/4000+n.ph*2)});
+  requestAnimationFrame(drawNet);
+  const {ctx,nodes,rows,W,H}=NET;if(!W)return;ctx.clearRect(0,0,W,H);
+  const narrow=W<640;if(narrow&&!rows.length)return;
+  nodes.forEach(n=>{n.x=narrow?W-6+2*Math.sin(t/3000+n.ph):W*(n.ax+0.05*Math.sin(t/6000+n.ph));n.y=H*(0.06+0.9*n.ay)+18*Math.sin(t/4000+n.ph*2)});
   ctx.lineWidth=1;
-  rows.forEach((r,ri)=>{r.srcs.forEach(sn=>{const n=nodes.find(x=>x.name===sn);if(!n)return;
-    if(Math.abs(n.y-r.y)>H*0.35)return; // keep the web local, like the video
+  rows.forEach((r,ri)=>{r.srcs.forEach(sn=>{const n=nodes.find(x=>x.name===sn);if(!n||Math.abs(n.y-r.y)>H*0.35)return;
     ctx.strokeStyle='rgba(57,197,230,'+(narrow?0.18:0.3)+')';ctx.beginPath();ctx.moveTo(n.x,n.y);ctx.lineTo(r.x,r.y);ctx.stroke();
-    const p=((t/2200)+ri*0.13)%1;ctx.fillStyle='rgba(57,197,230,0.75)';ctx.beginPath();ctx.arc(n.x+(r.x-n.x)*p,n.y+(r.y-n.y)*p,1.6,0,6.28);ctx.fill();
-    ctx.fillStyle='rgba(255,79,139,0.75)';ctx.beginPath();ctx.arc(r.x,r.y,2.4,0,6.28);ctx.fill();})});
+    const q=((t/2200)+ri*0.13)%1;ctx.fillStyle='rgba(57,197,230,0.75)';ctx.beginPath();ctx.arc(n.x+(r.x-n.x)*q,n.y+(r.y-n.y)*q,1.6,0,6.28);ctx.fill();
+    ctx.fillStyle='rgba(255,79,139,0.75)';ctx.beginPath();ctx.arc(r.x,r.y,2.4,0,6.28);ctx.fill()})});
   ctx.font='10px '+getComputedStyle(document.body).getPropertyValue('--mono');
-  nodes.forEach(n=>{ctx.fillStyle=n.color;ctx.globalAlpha=.85;ctx.beginPath();ctx.arc(n.x,n.y,3.4,0,6.28);ctx.fill();
-    ctx.strokeStyle=n.color;ctx.globalAlpha=.25;ctx.beginPath();ctx.arc(n.x,n.y,7+2*Math.sin(t/500+n.ph),0,6.28);ctx.stroke();ctx.globalAlpha=1});
+  nodes.forEach(n=>{ctx.fillStyle=n.color;ctx.globalAlpha=.85;ctx.beginPath();ctx.arc(n.x,n.y,3.4,0,6.28);ctx.fill();ctx.strokeStyle=n.color;ctx.globalAlpha=.25;ctx.beginPath();ctx.arc(n.x,n.y,7+2*Math.sin(t/500+n.ph),0,6.28);ctx.stroke();ctx.globalAlpha=1});
   NET.labels.forEach(l=>{l.life-=1;if(l.life<=0){if(Math.random()<0.01){l.life=60+Math.random()*80;l.n=Math.random()*nodes.length|0}return}
     const n=nodes[l.n];if(!n)return;ctx.globalAlpha=Math.min(1,l.life/20)*0.9;ctx.strokeStyle='#39c5e6';ctx.fillStyle='rgba(7,9,13,.85)';
     const w=ctx.measureText(l.t).width+8,lx=(n.x+8+w>W-4)?n.x-8-w:n.x+8;ctx.fillRect(lx,n.y-16,w,14);ctx.strokeRect(lx,n.y-16,w,14);ctx.fillStyle='#bfefff';ctx.fillText(l.t,lx+4,n.y-5.5);ctx.globalAlpha=1});
-  requestAnimationFrame(drawNet);
 }
-load().then(render).then(()=>setTimeout(layoutNet,1200));
+// ---------- brain hero: neural map of the real hot items ----------
+const BR={items:[],srcs:[],links:[],P:[],E:[],on:false,raf:0,vis:true,hl:-1,hs:-1,sel:-1,filter:'all',sig:[],spk:[],t:0,lt:0,spawnAt:0,fireAt:-1e9,W:0,ptr:'mouse',bound:false};
+const RM=window.matchMedia?matchMedia('(prefers-reduced-motion: reduce)'):{matches:false};
+const SCOL={bull:'#ff4d5e',bear:'#1fd18a',mixed:'#ffb547'};
+const srcKey=n=>String(n||'').replace(/[（(].*$/,'').trim()||String(n||'');
+const tagKey=s=>String(s||'').replace(/[（(].*$/,'').trim();
+function shortT(t,n){t=String(t||'');const m=t.match(/^(.{6,}?)[：:，,；;]/);const s=m?m[1]:t;return s.length>n?s.slice(0,n-1)+'…':s}
+function rng(a){return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const hex=c=>{c=c.replace('#','');return [0,2,4].map(i=>parseInt(c.substr(i,2),16))};
+const mixc=(a,b,t)=>a.map((v,i)=>Math.round(v+(b[i]-v)*t));
+const rgba=(c,a)=>'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')';
+const CY=hex('#39c5e6'),PU=hex('#a371f7'),PK=hex('#ff4f8b');
+const SPR={};
+function sprite(c){if(SPR[c])return SPR[c];const s=document.createElement('canvas');s.width=s.height=64;const g=s.getContext('2d');g.fillStyle=c;g.fillRect(0,0,64,64);
+  g.globalCompositeOperation='destination-in';const gr=g.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba(0,0,0,1)');gr.addColorStop(.16,'rgba(0,0,0,.8)');gr.addColorStop(.42,'rgba(0,0,0,.2)');gr.addColorStop(1,'rgba(0,0,0,0)');
+  g.fillStyle=gr;g.fillRect(0,0,64,64);return SPR[c]=s}
+function glow(ctx,c,x,y,r,a){if(a<=.01||r<=0)return;ctx.globalAlpha=Math.min(1,a);ctx.drawImage(sprite(c),x-r,y-r,2*r,2*r)}
+function qpt(p0,c,p1,t){const u=1-t;return [u*u*p0[0]+2*u*t*c[0]+t*t*p1[0],u*u*p0[1]+2*u*t*c[1]+t*t*p1[1]]}
+function qpath(cv,n,out){for(let i=out.length?1:0;i<=n;i++)out.push(qpt(cv[0],cv[1],cv[2],i/n));return out}
+function qstroke(ctx,cv){ctx.beginPath();ctx.moveTo(cv[0][0],cv[0][1]);ctx.quadraticCurveTo(cv[1][0],cv[1][1],cv[2][0],cv[2][1]);ctx.stroke()}
+function dot(ctx,x,y,r){ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fill()}
+
+function brainInit(H){
+  const its=(H.items||[]).slice().sort((a,b)=>a.rank-b.rank),sm=new Map();
+  const hasScore=its.length>1&&its.every(x=>typeof x.score==='number');
+  const sv=hasScore?its.map(x=>x.score):[0],smax=Math.max(...sv),smin=Math.min(...sv);
+  BR.hasScore=hasScore;
+  BR.items=its.map((it,i)=>{
+    const keys=[...new Set((it.sources||[]).map(s=>srcKey(s.name)).filter(Boolean))];
+    keys.forEach(k=>{if(!sm.has(k))sm.set(k,{name:k,n:0,ranks:[],fl:0});const s=sm.get(k);s.n++;s.ranks.push(it.rank)});
+    const w=hasScore&&smax>smin?(it.score-smin)/(smax-smin):its.length>1?1-i/(its.length-1):1;
+    return {it,rank:it.rank,i,keys,w,sent:SCOL[it.sentiment]?it.sentiment:'mixed',col:SCOL[it.sentiment]||SCOL.mixed,
+      tags:[...new Set([...(it.bull||[]),...(it.bear||[])].map(tagKey).filter(Boolean))],fl:0};
+  });
+  BR.srcs=[...sm.values()].sort((a,b)=>b.n-a.n);
+  BR.srcs.forEach((s,i)=>{s.i=i;s.col=srcColor(s.name)});
+  BR.items.forEach(o=>o.si=o.keys.map(k=>BR.srcs.findIndex(s=>s.name===k)));
+  const pm=new Map(),tm=new Map();                     // shared-sector links (exact tag match)
+  BR.items.forEach((o,i)=>o.tags.forEach(t=>{if(!tm.has(t))tm.set(t,[]);tm.get(t).push(i)}));
+  tm.forEach((arr,t)=>{for(let a=0;a<arr.length;a++)for(let b=a+1;b<arr.length;b++){const k=arr[a]+'-'+arr[b];if(!pm.has(k))pm.set(k,{a:arr[a],b:arr[b],t:[]});pm.get(k).t.push(t)}});
+  BR.links=[...pm.values()];
+  const w=H.window||{},ws=(w.start||'').slice(5),we=(w.end||'').slice((w.start||'').slice(0,10)===(w.end||'').slice(0,10)?11:5);
+  $('#hsub').innerHTML='<em>'+BR.srcs.length+'</em> 个引用来源 → <em>'+BR.items.length+'</em> 条热点'+(ws?' · '+esc(ws)+' → '+esc(we):'');
+  $('#bleg').innerHTML='<span><i style="background:'+SCOL.bull+'"></i>利好</span><span><i style="background:'+SCOL.bear+'"></i>利空</span><span><i style="background:'+SCOL.mixed+'"></i>多空交织</span>'
+    +(BR.links.length?'<span><i class="dl"></i>共同板块</span>':'')+'<span>节点越大'+(hasScore?'评分越高':'排名越靠前')+'</span>';
+  const top=BR.items[0];if(top)setFire(top,false);
+}
+
+function brainLayout(force){
+  const wrap=$('#hcv'),cv=$('#brain');const W=wrap.clientWidth;if(!W||!BR.items.length)return false;
+  if(!force&&W===BR.W)return true;
+  const mob=W<720,n=BR.items.length,FS=getComputedStyle(document.body).getPropertyValue('--sans'),FM=getComputedStyle(document.body).getPropertyValue('--mono');
+  const H=Math.round(mob?Math.min(480,Math.max(360,W*1.12)):Math.max(430,Math.min(520,W*.5)));
+  wrap.style.height=H+'px';
+  const dpr=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+  const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
+  Object.assign(BR,{W,H,mob,dpr,ctx,FS,FM,sig:[],spk:[],sel:-1});
+  let bcx,bcy,hh,hw;
+  const S=BR.srcs.length,nmax=Math.max(1,...BR.srcs.map(s=>s.n));
+  if(mob){
+    const ry=(H-104)/1.766,rx=W/2-22;bcx=W/2;bcy=H-22-ry;hh=ry*.64;hw=Math.min(hh/1.02,rx*.64);hh=Math.min(hh,hw*1.2);
+    BR.srcs.forEach((s,i)=>{s.x=W*(i+.5)/Math.max(1,S);s.y=50;s.ly=i%2?33:15;s.r=2.6+2.8*Math.sqrt(s.n/nmax);s.lab=s.name.length>5?s.name.slice(0,4)+'…':s.name});
+    const a0=-52*Math.PI/180,a1=232*Math.PI/180;
+    BR.items.forEach((o,i)=>{const a=a0+(a1-a0)*(n>1?i/(n-1):.5);o.x=bcx+rx*Math.cos(a);o.y=bcy+ry*Math.sin(a);o.r=8.5+4*o.w});
+  }else{
+    ctx.font='12px '+FS;
+    BR.srcs.forEach(s=>{s.lab=s.name;s.lw=ctx.measureText(s.name).width+ctx.measureText(' '+s.n).width+6});
+    const sx=Math.max(90,26+Math.max(...BR.srcs.map(s=>s.lw)));
+    hh=H*.41;const labMin=Math.min(270,W*.28);
+    hw=Math.min(hh/1.02,(W-sx-70-70-40-16-labMin)/2);hh=Math.min(hh,hw*1.15);
+    bcx=sx+70+hw;bcy=H/2+2;
+    const ax=bcx+hw+66,rx=40,ry=H*.445;
+    BR.items.forEach((o,i)=>{const u=n>1?2*i/(n-1)-1:0;o.x=ax+rx*Math.sqrt(1-u*u);o.y=bcy+ry*u;o.r=3.6+4.6*o.w});
+    const sy=Math.min(hh*.9,(S-1)*44/2);
+    BR.srcs.forEach((s,i)=>{s.x=sx;s.y=S>1?bcy-sy+2*sy*i/(S-1):bcy;s.r=3.4+4.2*Math.sqrt(s.n/nmax)});
+    BR.labX=ax+rx+14;const nch=Math.max(6,Math.floor((W-BR.labX-30-10)/12.5));
+    BR.items.forEach(o=>{o.lab=shortT(o.it.title,nch)});
+  }
+  BR.b={bcx,bcy,hw,hh};
+  // ---- particles of two hemispheres (top view, front up), fixed seed => stable shape
+  const R=rng(20261008),P=[],per=mob?80:150;
+  const shape=(u,y)=>{const a=.48*(1+.07*y),du=(u-.5)/a;return Math.pow(Math.abs(du),du<0?3.4:2.3)+Math.pow(Math.abs(y/.98),2.2)};
+  const bnd=th=>{const ct=Math.cos(th),st=Math.sin(th),y=.98*Math.sign(st)*Math.pow(Math.abs(st),2/2.2),a=.48*(1+.07*y);return [Math.max(.03,.5+a*Math.sign(ct)*Math.pow(Math.abs(ct),2/(ct<0?3.4:2.3))),y]};
+  const toS=(side,u,y)=>[bcx+side*u*hw,bcy+y*hh];
+  const outline=[[],[]];
+  [-1,1].forEach((side,k)=>{
+    for(let j=0;j<=140;j++){const b=bnd(j/140*6.2832);outline[k].push(toS(side,b[0],b[1]))}
+    let c=0,guard=0;
+    while(c<per&&guard++<50000){const u=R(),y=R()*2-1,v=shape(u,y);if(u<.045||v>1)continue;if(c<per*.34&&v<.7)continue;
+      const p=toS(side,u,y),t=(side*u+1)/2;
+      P.push({x:p[0],y:p[1],bx:side*u,by:y,side,c:t<.5?mixc(CY,PU,t*2):mixc(PU,PK,(t-.5)*2),r:.6+R()*1.2,g:R()<.22});c++}
+  });
+  const E=[],md=(mob?.36:.3)*hw;
+  P.forEach((p,i)=>{const near=[];P.forEach((q,j)=>{if(j<=i||q.side!==p.side)return;const d=Math.hypot(p.x-q.x,p.y-q.y);if(d<md)near.push([d,j])});
+    near.sort((a,b)=>a[0]-b[0]).slice(0,3).forEach(a=>E.push([i,a[1]]))});
+  const Lc=P.map((p,i)=>i).filter(i=>P[i].side<0&&Math.abs(P[i].bx)<.32&&Math.abs(P[i].by)<.5),Rc=P.map((p,i)=>i).filter(i=>P[i].side>0&&P[i].bx<.32&&Math.abs(P[i].by)<.5);
+  Lc.slice(0,mob?6:10).forEach(i=>{let best=-1,bd=1e9;Rc.forEach(j=>{const d=Math.hypot(P[i].x-P[j].x,P[i].y-P[j].y);if(d<bd){bd=d;best=j}});if(best>=0)E.push([i,best])});
+  BR.P=P;BR.E=E;
+  const nearest=(x,y,flt,k)=>P.map((p,i)=>[Math.hypot(p.x-x,p.y-y),i]).filter(a=>!flt||flt(P[a[1]])).sort((a,b)=>a[0]-b[0]).slice(0,k).map(a=>a[1]);
+  BR.srcs.forEach(s=>{const c=nearest(s.x,s.y,mob?null:p=>p.side<0,4);s.e=c[(R()*c.length)|0];const e=P[s.e];
+    s.cv=[[s.x,s.y],mob?[s.x,(s.y+e.y)/2]:[(s.x+e.x)/2+16,s.y],[e.x,e.y]]});
+  BR.items.forEach(o=>{const c=nearest(o.x,o.y,mob?null:p=>p.side>0,4);o.e=c[(R()*c.length)|0];const e=P[o.e];
+    o.cv=[[e.x,e.y],mob?[(e.x+o.x)/2+(o.y-e.y)*.2,(e.y+o.y)/2-(o.x-e.x)*.2]:[(e.x+o.x)/2+10,o.y],[o.x,o.y]]});
+  BR.links.forEach(l=>{const a=BR.items[l.a],b=BR.items[l.b];
+    l.cv=[[a.x,a.y],mob?[(a.x+b.x)/2+(bcx-(a.x+b.x)/2)*.45,(a.y+b.y)/2+(bcy-(a.y+b.y)/2)*.45]:[Math.min(a.x,b.x)-26-Math.abs(a.y-b.y)*.2,(a.y+b.y)/2],[b.x,b.y]]});
+  // ---- static layer: aura, cortex folds, synapses, neurons
+  const lay=document.createElement('canvas');lay.width=cv.width;lay.height=cv.height;const g=lay.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);
+  g.globalCompositeOperation='lighter';
+  let gr=g.createRadialGradient(bcx,bcy,0,bcx,bcy,hh*1.55);gr.addColorStop(0,'rgba(163,113,247,.20)');gr.addColorStop(.6,'rgba(120,60,220,.06)');gr.addColorStop(1,'rgba(163,113,247,0)');g.fillStyle=gr;g.fillRect(0,0,W,H);
+  outline.forEach((pts,k)=>{
+    const side=k?1:-1,col=k?PK:CY,path=new Path2D();pts.forEach((p,i)=>i?path.lineTo(p[0],p[1]):path.moveTo(p[0],p[1]));path.closePath();
+    const cx=bcx+side*.5*hw;gr=g.createRadialGradient(cx,bcy-hh*.2,0,cx,bcy,hh*1.05);gr.addColorStop(0,rgba(col,.16));gr.addColorStop(1,rgba(PU,.04));g.fillStyle=gr;g.fill(path);
+    g.save();g.clip(path);g.lineWidth=1;
+    for(let L=1;L<=6;L++){const sc=1-L*.145;g.strokeStyle=rgba(mixc(col,PU,.55),.13+.025*L);g.beginPath();
+      for(let j=0;j<=200;j++){const th=j/200*6.2832,b=bnd(th),wv=1+.075*Math.sin(9*th+L*1.3)+.04*Math.sin(17*th+L*2.1)+.02*Math.sin(29*th+L);
+        const p=toS(side,.5+(b[0]-.5)*sc*wv,b[1]*sc*wv);j?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])}
+      g.closePath();g.stroke()}
+    g.restore();
+    g.shadowColor=rgba(col,.95);g.shadowBlur=16;g.strokeStyle=rgba(col,.8);g.lineWidth=1.7;g.stroke(path);g.shadowBlur=0;
+  });
+  g.lineWidth=.6;E.forEach(e=>{const a=P[e[0]],b=P[e[1]];g.strokeStyle=rgba(mixc(a.c,b.c,.5),.2);g.beginPath();g.moveTo(a.x,a.y);g.lineTo(b.x,b.y);g.stroke()});
+  P.forEach(p=>{g.globalAlpha=1;g.fillStyle=rgba(p.c,.85);dot(g,p.x,p.y,p.r);if(p.g)glow(g,rgba(p.c,1),p.x,p.y,p.r*6,.5)});
+  g.globalAlpha=1;gr=g.createLinearGradient(0,bcy-hh,0,bcy+hh);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(.5,'rgba(230,212,255,.45)');gr.addColorStop(1,'rgba(255,255,255,0)');
+  g.strokeStyle=gr;g.lineWidth=1;g.beginPath();g.moveTo(bcx,bcy-hh*.96);g.lineTo(bcx,bcy+hh*.96);g.stroke();
+  BR.layer=lay;
+  if(!RM.matches){BR.spawnAt=0;for(let k=0;k<50;k++){BR.t+=50;brainStep(50,true)}}   // warm up so it is alive at first paint
+  brainDraw();
+  return true;
+}
+const okItem=o=>BR.filter==='all'||o.sent===BR.filter;
+function curHL(){return BR.hl>=0?BR.hl:BR.sel}
+function focusI(o){let f=okItem(o)?1:.18;const h=curHL();if(h>=0)f*=o.i===h?1.8:.3;else if(BR.hs>=0)f*=o.si.includes(BR.hs)?1.5:.3;return f}
+function focusS(s){const h=curHL();if(h>=0)return BR.items[h].si.includes(s.i)?1.7:.3;if(BR.hs>=0)return s.i===BR.hs?1.8:.3;return 1}
+function brainSignal(o){
+  const P=BR.P,b=BR.b,si=o.si.length?o.si[Math.random()*o.si.length|0]:-1,s=BR.srcs[si],pts=[];
+  if(s){qpath(s.cv,16,pts);s.fl=1}
+  const i1=pts.length,a=s?P[s.e]:P[Math.random()*P.length|0],e=P[o.e];
+  qpath([[a.x,a.y],[b.bcx+(Math.random()-.5)*b.hw*1.1,b.bcy+(Math.random()-.5)*b.hh],[e.x,e.y]],20,pts);
+  const i2=pts.length;qpath(o.cv,16,pts);
+  BR.sig.push({pts,i1,i2,o:o.i,s:si,p:0,dur:(BR.mob?2700:2300)*(.8+Math.random()*.5)});
+}
+function setFire(o,anim){const el=$('#bfire');if(!el)return;const s=SENT[o.it.sentiment]||SENT.mixed;
+  el.innerHTML='<i>⚡</i><b class="'+s[1]+'" style="color:'+o.col+'">#'+o.rank+'</b>'+esc(o.it.title);el.dataset.rank=o.rank;
+  if(anim&&!RM.matches){el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}}
+function brainStep(dt,warm){
+  const T=BR.t,mob=BR.mob;
+  if(T>=BR.spawnAt){BR.spawnAt=T+(mob?520:320)*(.6+Math.random()*.8);
+    if(BR.sig.length<(mob?7:13)){const pool=BR.items.filter(okItem),h=curHL();let o=h>=0&&Math.random()<.65?BR.items[h]:null;
+      if(!o&&BR.hs>=0&&Math.random()<.65){const c=pool.filter(x=>x.si.includes(BR.hs));if(c.length)o=c[Math.random()*c.length|0]}
+      if(!o&&pool.length){let r=Math.random()*pool.reduce((a,x)=>a+.4+x.w,0);o=pool.find(x=>(r-=.4+x.w)<=0)||pool[0]}
+      if(o)brainSignal(o)}}
+  while(BR.spk.length<(mob?10:22)&&BR.E.length)BR.spk.push({e:BR.E[Math.random()*BR.E.length|0],p:0,v:1/(450+Math.random()*700),d:Math.random()<.5});
+  BR.spk=BR.spk.filter(s=>(s.p+=dt*s.v)<1);
+  BR.sig=BR.sig.filter(s=>{s.p+=dt/s.dur;if(s.p>=1){const o=BR.items[s.o];o.fl=1;if(!warm&&BR.t-BR.fireAt>1400){BR.fireAt=BR.t;setFire(o,true)}return false}return true});
+  const k=Math.exp(-dt/480);BR.items.forEach(o=>o.fl*=k);BR.srcs.forEach(s=>s.fl*=k);
+}
+function brainDraw(){
+  const {ctx,W,H,mob}=BR;if(!ctx||!W||!BR.layer)return;const T=BR.t,h=curHL(),b=BR.b,still=RM.matches;
+  ctx.setTransform(BR.dpr,0,0,BR.dpr,0,0);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;ctx.clearRect(0,0,W,H);
+  ctx.globalCompositeOperation='lighter';
+  ctx.globalAlpha=still?1:.84+.16*Math.sin(T/1700);ctx.drawImage(BR.layer,0,0,W,H);
+  ctx.lineWidth=1;ctx.strokeStyle='#39c5e6';ctx.setLineDash([2,7]);ctx.lineDashOffset=-T/60;ctx.globalAlpha=.32;
+  ctx.beginPath();ctx.ellipse(b.bcx,b.bcy,b.hw*1.24,b.hh*1.1,0,0,6.2832);ctx.stroke();
+  ctx.setLineDash([36,16,4,16]);ctx.lineDashOffset=T/45;ctx.globalAlpha=.16;ctx.strokeStyle='#ff4f8b';
+  ctx.beginPath();ctx.ellipse(b.bcx,b.bcy,b.hw*1.34,b.hh*1.17,0,0,6.2832);ctx.stroke();ctx.setLineDash([]);
+  // links source -> brain and brain -> hot item
+  BR.srcs.forEach(s=>{const f=focusS(s);ctx.globalAlpha=Math.min(.95,.22*f+s.fl*.35);ctx.lineWidth=f>1.2?1.5:1;ctx.strokeStyle=s.col;qstroke(ctx,s.cv)});
+  BR.items.forEach(o=>{const f=focusI(o);ctx.globalAlpha=Math.min(.95,.2*f+o.fl*.45);ctx.lineWidth=f>1.2?1.6:1;ctx.strokeStyle=o.col;qstroke(ctx,o.cv)});
+  if(h>=0){const o=BR.items[h],e=BR.P[o.e];ctx.globalAlpha=.9;ctx.strokeStyle='#e6d4ff';ctx.lineWidth=1.2;
+    o.si.forEach(si=>{const s=BR.srcs[si],a=BR.P[s.e];qstroke(ctx,[[a.x,a.y],[b.bcx,b.bcy],[e.x,e.y]])})}
+  ctx.setLineDash([3,5]);ctx.lineWidth=1.1;ctx.strokeStyle='#c39bff';
+  BR.links.forEach(l=>{const on=h===l.a||h===l.b;ctx.globalAlpha=on?.9:(h>=0||BR.hs>=0?.06:.34);qstroke(ctx,l.cv)});ctx.setLineDash([]);
+  // neural sparks inside the brain
+  ctx.lineWidth=1;
+  BR.spk.forEach(s=>{const a=BR.P[s.e[0]],c=BR.P[s.e[1]],p=s.d?s.p:1-s.p,x=a.x+(c.x-a.x)*p,y=a.y+(c.y-a.y)*p,al=Math.sin(Math.PI*s.p);
+    ctx.globalAlpha=al*.45;ctx.strokeStyle=rgba(a.c,1);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(c.x,c.y);ctx.stroke();glow(ctx,'#d9c2ff',x,y,mob?5:6,al*.9)});
+  // signals: source -> brain -> hot item
+  BR.sig.forEach(s=>{const o=BR.items[s.o],N=s.pts.length-1,f=Math.min(N,s.p*N),i=Math.floor(f),fr=f-i,p0=s.pts[i],p1=s.pts[Math.min(N,i+1)];
+    const hx=p0[0]+(p1[0]-p0[0])*fr,hy=p0[1]+(p1[1]-p0[1])*fr,col=i<s.i1?(BR.srcs[s.s]||{col:'#39c5e6'}).col:i<s.i2?'#e6d4ff':o.col,a=Math.min(1,.5+.3*focusI(o));
+    ctx.strokeStyle=col;ctx.lineWidth=1.8;
+    [[Math.max(0,i-9),Math.max(0,i-4),.18],[Math.max(0,i-4),i,.5]].forEach(([j0,j1,al])=>{ctx.globalAlpha=a*al;ctx.beginPath();ctx.moveTo(s.pts[j0][0],s.pts[j0][1]);for(let j=j0+1;j<=j1;j++)ctx.lineTo(s.pts[j][0],s.pts[j][1]);if(j1===i)ctx.lineTo(hx,hy);ctx.stroke()});
+    glow(ctx,col,hx,hy,mob?9:11,a);glow(ctx,'#ffffff',hx,hy,3.2,a)});
+  // source nodes
+  BR.srcs.forEach(s=>{const f=focusS(s);glow(ctx,s.col,s.x,s.y,s.r*3.6+s.fl*9,Math.min(1,.5*f+s.fl*.5));ctx.globalAlpha=Math.min(1,.55*f+.3);ctx.fillStyle=s.col;dot(ctx,s.x,s.y,s.r)});
+  // hot item nodes
+  BR.items.forEach(o=>{const f=focusI(o),pl=still?0:.18*Math.sin(T/650+o.i*1.7);
+    glow(ctx,o.col,o.x,o.y,o.r*(3+pl)+o.fl*14,Math.min(1,.42*f+o.fl*.6));
+    if(o.fl>.04){ctx.globalAlpha=o.fl*.8;ctx.strokeStyle=o.col;ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(o.x,o.y,o.r+3+(1-o.fl)*16,0,6.2832);ctx.stroke()}
+    if(o.rank<=3||o.i===h){ctx.globalAlpha=.55*Math.min(1,f);ctx.strokeStyle=o.col;ctx.lineWidth=1;ctx.setLineDash([3,4]);ctx.lineDashOffset=-T/40;ctx.beginPath();ctx.arc(o.x,o.y,o.r+(mob?4:5),0,6.2832);ctx.stroke();ctx.setLineDash([])}});
+  ctx.globalCompositeOperation='source-over';
+  BR.items.forEach(o=>{const f=focusI(o);ctx.globalAlpha=Math.min(1,.45*f+.35);
+    if(mob){ctx.fillStyle='rgba(10,8,20,.88)';dot(ctx,o.x,o.y,o.r);ctx.strokeStyle=o.col;ctx.lineWidth=o.i===h?2.2:1.5;ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,6.2832);ctx.stroke()}
+    else{ctx.fillStyle=o.col;dot(ctx,o.x,o.y,o.r);ctx.fillStyle='rgba(255,255,255,.85)';dot(ctx,o.x,o.y,Math.max(1.2,o.r*.32))}});
+  ctx.textBaseline='middle';
+  if(mob){
+    ctx.textAlign='center';
+    BR.items.forEach(o=>{ctx.globalAlpha=focusI(o)<.5?.4:1;ctx.fillStyle=o.i===h?'#fff':'#e6edf3';ctx.font='700 '+(o.r>11?11:10)+'px '+BR.FM;ctx.fillText(o.rank,o.x,o.y+.5)});
+    BR.srcs.forEach(s=>{const f=focusS(s);ctx.globalAlpha=f<.5?.35:.75;ctx.strokeStyle=s.col;ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(s.x,s.ly+7);ctx.lineTo(s.x,s.y-s.r-2);ctx.stroke();
+      ctx.globalAlpha=f<.5?.45:1;ctx.fillStyle=f>1.2?'#fff':'#c9d1d9';ctx.font='10.5px '+BR.FS;ctx.fillText(s.lab,Math.max(22,Math.min(BR.W-22,s.x)),s.ly)});
+  }else{
+    ctx.textAlign='left';
+    BR.items.forEach(o=>{const f=focusI(o),on=o.i===h;ctx.globalAlpha=f<.5?.32:1;
+      ctx.font='700 11px '+BR.FM;ctx.fillStyle=o.col;ctx.fillText('#'+o.rank,BR.labX,o.y);
+      ctx.font=(on?'600 ':'')+'12.5px '+BR.FS;ctx.fillStyle=on?'#ffffff':'#c3cad3';ctx.fillText(o.lab,BR.labX+30,o.y)});
+    ctx.textAlign='right';
+    BR.srcs.forEach(s=>{const f=focusS(s),x0=s.x-s.r-9;ctx.globalAlpha=f<.5?.4:1;ctx.font='11px '+BR.FM;ctx.fillStyle='#7d8590';const cn=String(s.n);ctx.fillText(cn,x0,s.y);
+      ctx.font=(f>1.2?'600 ':'')+'12px '+BR.FS;ctx.fillStyle=f>1.2?'#fff':'#c9d1d9';ctx.fillText(s.lab,x0-ctx.measureText(cn).width-6,s.y)});
+  }
+  ctx.globalAlpha=1;ctx.textAlign='left';
+}
+function brainRun(){return BR.on&&BR.vis&&!document.hidden&&!RM.matches&&BR.W>0}
+function brainFrame(now){BR.raf=0;if(!brainRun())return;const dt=Math.min(50,now-(BR.lt||now));BR.lt=now;BR.t+=dt;brainStep(dt);brainDraw();BR.raf=requestAnimationFrame(brainFrame)}
+function brainStart(){if(brainRun()){if(!BR.raf){BR.lt=0;BR.raf=requestAnimationFrame(brainFrame)}}else{if(BR.raf){cancelAnimationFrame(BR.raf);BR.raf=0}brainDraw()}}
+function brainKick(){if(!BR.raf)brainDraw()}
+function brainHit(x,y){
+  let best=-1,bd=1e9;
+  BR.items.forEach(o=>{let d=Math.hypot(o.x-x,o.y-y);if(!BR.mob&&x>o.x&&Math.abs(y-o.y)<10)d=Math.min(d,Math.abs(y-o.y));if(d<o.r+(BR.mob?9:7)&&d<bd){bd=d;best=o.i}});
+  if(best>=0)return {k:'i',i:best};
+  for(const s of BR.srcs){if(Math.hypot(s.x-x,s.y-y)<s.r+12||(!BR.mob&&x<s.x&&x>s.x-s.lw-20&&Math.abs(y-s.y)<11)||(BR.mob&&Math.abs(x-s.x)<BR.W/BR.srcs.length/2&&y<s.y+10))return {k:'s',i:s.i}}
+  return null;
+}
+function tipHide(){const t=$('#btip');if(t)t.classList.remove('on','sel')}
+function tipShow(hit,sel){
+  const tp=$('#btip');let html,node;
+  if(hit.k==='i'){const o=BR.items[hit.i],it=o.it,s=SENT[it.sentiment]||SENT.mixed;node=o;
+    html='<div class="tt-h"><span class="tt-r" style="color:'+o.col+'">#'+it.rank+'</span><span class="'+s[1]+'">'+s[0]+'</span><span>排名 '+it.rank+'/'+BR.items.length+(typeof it.score==='number'?' · 评分 '+esc(it.score):'')+'</span></div>'
+      +'<div class="tt-t">'+esc(it.title)+'</div>'
+      +((it.bull||[]).length+(it.bear||[]).length?'<div class="tt-g">'+(it.bull||[]).map(t=>'<span class="tg bull">利好·'+esc(t)+'</span>').join('')+(it.bear||[]).map(t=>'<span class="tg bear">利空·'+esc(t)+'</span>').join('')+'</div>':'')
+      +'<div class="tt-m">来源：'+esc(o.keys.join(' · ')||'—')+'</div>'
+      +(sel?'<button class="tt-go" data-jump="'+it.rank+'">查看详情 ↓</button>':'<div class="tt-m">点击节点 → 跳到详情卡片</div>');
+  }else{const s=BR.srcs[hit.i];node=s;
+    html='<div class="tt-h"><span class="tt-r" style="color:'+s.col+'">● '+esc(s.name)+'</span></div><div class="tt-t">被 '+s.n+' 条热点引用</div><div class="tt-m">'+s.ranks.map(r=>'#'+r).join('  ')+'</div>'}
+  tp.innerHTML=html;tp.classList.add('on');tp.classList.toggle('sel',!!sel);
+  const tw=tp.offsetWidth,th=tp.offsetHeight;let x,y;
+  if(BR.mob){x=(BR.W-tw)/2;y=hit.k==='s'?node.y+16:BR.b.bcy-th/2;}
+  else if(hit.k==='i'){x=node.x-tw-22;y=node.y-th/2}
+  else{x=node.x+16;y=node.y-th/2}
+  tp.style.left=Math.max(8,Math.min(BR.W-tw-8,x))+'px';tp.style.top=Math.max(8,Math.min(BR.H-th-8,y))+'px';
+  const bt=tp.querySelector('[data-jump]');if(bt)bt.onclick=ev=>{ev.stopPropagation();jumpCard(+bt.dataset.jump)};
+}
+function jumpCard(r){
+  const el=document.getElementById('hot-'+r);if(!el)return;
+  const q=$('#q');if(q&&q.value){q.value='';q.oninput()}
+  if(el.classList.contains('hide')){const all=$('#flt .tab[data-f="all"]');if(all)all.click()}
+  BR.sel=-1;BR.hs=-1;tipHide();brainKick();
+  el.classList.add('open');el.scrollIntoView({behavior:RM.matches?'auto':'smooth',block:'center'});el.classList.remove('flash');void el.offsetWidth;el.classList.add('flash');
+  setTimeout(layoutNet,40);
+}
+function brainHover(rank,on){const o=BR.items.find(x=>x.rank===rank);if(!o)return;BR.hl=on?o.i:-1;const el=document.getElementById('hot-'+rank);if(el)el.classList.toggle('nodeon',on);brainKick()}
+function brainBind(){
+  if(BR.bound)return;BR.bound=true;const cv=$('#brain');
+  const loc=e=>{const r=cv.getBoundingClientRect();return [e.clientX-r.left,e.clientY-r.top]};
+  const setHover=hit=>{const hl=hit&&hit.k==='i'?hit.i:-1,hs=hit&&hit.k==='s'?hit.i:-1;if(hl===BR.hl&&hs===BR.hs)return;BR.hl=hl;BR.hs=hs;
+    $$('#body .row.nodeon').forEach(r=>r.classList.remove('nodeon'));if(hl>=0){const el=document.getElementById('hot-'+BR.items[hl].rank);if(el)el.classList.add('nodeon')}
+    hit?tipShow(hit,false):tipHide();cv.style.cursor=hit?'pointer':'crosshair';brainKick()};
+  cv.addEventListener('pointerdown',e=>{BR.ptr=e.pointerType||'mouse'});
+  cv.addEventListener('pointermove',e=>{if((e.pointerType||'mouse')==='mouse'){BR.ptr='mouse';setHover(brainHit(...loc(e)))}});
+  cv.addEventListener('pointerleave',e=>{if((e.pointerType||'mouse')==='mouse')setHover(null)});
+  cv.addEventListener('click',e=>{const hit=brainHit(...loc(e));
+    if(BR.ptr==='mouse'){if(hit&&hit.k==='i')jumpCard(BR.items[hit.i].rank);return}
+    if(!hit){BR.sel=-1;BR.hs=-1;tipHide();brainKick();return}
+    if(hit.k==='i'){if(BR.sel===hit.i){jumpCard(BR.items[hit.i].rank);return}BR.sel=hit.i;BR.hs=-1}else{BR.sel=-1;BR.hs=hit.i}
+    tipShow(hit,true);brainKick()});
+  $('#bfire').addEventListener('click',()=>{const r=+$('#bfire').dataset.rank;if(r)jumpCard(r)});
+  if('IntersectionObserver' in window)new IntersectionObserver(es=>{BR.vis=es[es.length-1].isIntersecting;brainStart()}).observe($('#hero'));
+  document.addEventListener('visibilitychange',brainStart);
+  if(RM.addEventListener)RM.addEventListener('change',()=>{brainLayout(true);brainStart()});
+  let rt=0;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{if(BR.on&&brainLayout())brainStart()},150)});
+}
+function brainShow(on){
+  const hero=$('#hero');on=!!(on&&D.hot&&(D.hot.items||[]).length);hero.hidden=!on;BR.on=on;tipHide();
+  if(!on){if(BR.raf){cancelAnimationFrame(BR.raf);BR.raf=0}return}
+  if(!BR.items.length)brainInit(D.hot);
+  brainBind();BR.filter='all';BR.sel=-1;BR.hl=-1;BR.hs=-1;
+  brainLayout();brainStart();
+}
+
+function footer(){
+  const H=D.hot,st=(H&&H.source_status)||[];
+  $('#foot').innerHTML=(H&&H.trading_note?'<div>📅 '+esc(H.trading_note)+'</div>':'')
+    +(st.length?'<div class="srcs">'+st.map(s=>'<span class="'+(s.ok?'down':'up')+'">'+(s.ok?'●':'○')+' '+esc(s.name)+' '+(s.ok?s.n:'失败')+'</span>').join('')+'</div>':'')
+    +'<div class="srcs"><span class="wr">发布时间（交易日）：热点 '+esc(D.schedule.hot)+' · 早盘 '+esc(D.schedule.am)+' · 午后 '+esc(D.schedule.pm)+' · 复盘 '+esc(D.schedule.review)+'</span><span>页面生成 '+esc(D.generated)+'</span></div>'
+    +'<div class="disc">'+esc(D.disclaimer||'内容仅供参考，不构成投资建议。')+'</div>';
+}
+function start(d){
+  D=d;D.schedule=D.schedule||{hot:'09:02',am:'09:25',pm:'14:45',review:'15:20'};
+  KW=[...new Set(KW.concat(((D.hot&&D.hot.items)||[]).flatMap(i=>[...(i.bull||[]),...(i.bear||[])]).map(t=>String(t).replace(/[（(].*$/,'').trim()).filter(t=>t.length>=2&&t.length<=6)))];
+  $('#nav').innerHTML=(D.public?TABS.filter(t=>t[0]==='hot'):TABS).map(t=>'<button class="nt" data-t="'+t[0]+'">'+t[1]+'<span class="pd'+(part(t[0])?(isEx(t[0])?' ex':' ok'):'')+'"></span></button>').join('')
+    +(ENC?'<button class="nt lockb" id="lockb" title="锁定并清除本设备记住的密钥">🔒 锁定</button>':'');
+  $$('.nt[data-t]').forEach(b=>b.onclick=()=>go(b.dataset.t));
+  if(ENC)$('#lockb').onclick=lockNow;
+  const q=$('#q');q.oninput=()=>{const v=q.value.trim().toLowerCase();$$('.row,table.t tbody tr').forEach(r=>r.classList.toggle('hide',!!v&&r.textContent.toLowerCase().indexOf(v)<0));setTimeout(layoutNet,30)};
+  addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==q){e.preventDefault();q.focus()}});
+  addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(h!==CUR&&TABS.some(t=>t[0]===h))show(h,{keepHash:true})});
+  footer();show(defaultTab(),{keepHash:true});
+}
+
+// ---------- encrypted build: lock screen + Web Crypto decrypt ----------
+let ENC=null;const KEYPFX='ashare_dash_key:';
+const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const b64e=b=>{const u=new Uint8Array(b);let s='';for(let i=0;i<u.length;i++)s+=String.fromCharCode(u[i]);return btoa(s)};
+async function pwKey(pw,E,ext){const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt:b64d(E.salt),iterations:E.iter,hash:'SHA-256'},base,{name:'AES-GCM',length:256},ext,['decrypt'])}
+async function decryptBundle(key,E){const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(E.iv)},key,b64d(E.ct));return JSON.parse(new TextDecoder().decode(pt))}
+function lockUI(msg){$('.wrap').hidden=true;$('#lock').hidden=false;$('#lke').textContent=msg||'';setTimeout(()=>{try{$('#lkp').focus()}catch(e){}},60)}
+function unlocked(d){$('#lock').hidden=true;$('.wrap').hidden=false;start(d)}
+function lockNow(){try{if(ENC)localStorage.removeItem(KEYPFX+ENC.salt)}catch(e){}D=null;location.reload()}
+async function boot(){
+  const emb=JSON.parse($('#embedded').textContent);
+  if(!emb||!emb.enc){load().then(start);return}
+  ENC=emb.enc;$('.wrap').hidden=true;
+  const sk=KEYPFX+ENC.salt;
+  if(!(window.crypto&&crypto.subtle)){lockUI('当前浏览器不支持页面解密，请用 HTTPS 链接和新版浏览器打开');$('#lkb').disabled=true;return}
+  let saved=null;try{saved=localStorage.getItem(sk)}catch(e){}
+  if(saved){try{const key=await crypto.subtle.importKey('raw',b64d(saved),{name:'AES-GCM'},false,['decrypt']);unlocked(await decryptBundle(key,ENC));return}
+    catch(e){try{localStorage.removeItem(sk)}catch(_){}lockUI('已记住的密钥已失效（密码可能已更换），请重新输入')}}
+  else lockUI('');
+  $('#lkf').onsubmit=async ev=>{ev.preventDefault();const inp=$('#lkp'),pw=inp.value,btn=$('#lkb'),f=$('#lkf');
+    if(!pw){$('#lke').textContent='请输入访问密码';return}
+    btn.disabled=true;btn.textContent='解密中…';$('#lke').textContent='';const rem=$('#lkr').checked;
+    let d=null,key=null;
+    try{key=await pwKey(pw,ENC,rem);d=await decryptBundle(key,ENC)}catch(e){d=null}
+    if(!d){btn.disabled=false;btn.textContent='解锁';$('#lke').textContent='密码错误，请重试';f.classList.remove('shake');void f.offsetWidth;f.classList.add('shake');inp.select();return}
+    if(rem){try{localStorage.setItem(sk,b64e(await crypto.subtle.exportKey('raw',key)))}catch(e){}}
+    inp.value='';unlocked(d)};
+}
+boot();
 })();
 </script>
 </body>
