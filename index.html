@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07090d">
+<link rel="icon" href="data:,">
+<title>A股盘前热点 · Top 20</title>
+<style>
+:root{--bg:#07090d;--panel:#0d1117;--panel2:#11161d;--line:#232a33;--text:#d6dde6;--dim:#7d8590;
+--blue:#4493f8;--cyan:#39c5e6;--pink:#ff4f8b;--yellow:#e3b341;--up:#f0524f;--down:#2fbf71;
+--mono:ui-monospace,"SF Mono",Menlo,"JetBrains Mono","Geist Mono","DejaVu Sans Mono",monospace;
+--sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans CJK SC","Microsoft YaHei","Segoe UI",sans-serif}
+*{box-sizing:border-box}
+html,body{overflow-x:hidden;margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-text-size-adjust:100%}
+body{background:radial-gradient(1200px 600px at 70% -10%,#0f1a2a 0%,transparent 60%),var(--bg);min-height:100vh}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:980px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 14px 40px}
+/* stat counters */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:14px 4px 16px;border-bottom:1px solid var(--line)}
+.stat .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
+.stat .num{font-family:var(--mono);font-size:30px;font-weight:600;line-height:1.15;margin-top:4px;color:#e6edf3;font-variant-numeric:tabular-nums}
+.stat:nth-child(1) .num{color:var(--cyan)} .stat:nth-child(5) .num{color:var(--pink)}
+/* header */
+header{padding:18px 4px 6px}
+h1{margin:0;font-size:24px;letter-spacing:.02em;color:#f0f6fc}
+h1 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--pink);margin-right:8px;vertical-align:middle;box-shadow:0 0 10px var(--pink);animation:blink 1.6s infinite}
+@keyframes blink{50%{opacity:.25}}
+.meta{font-family:var(--mono);font-size:12px;color:var(--dim);margin-top:6px}
+.mood{margin:12px 0 4px;padding:10px 12px;border-left:3px solid var(--cyan);background:#0b131c;font-size:14px;line-height:1.65;border-radius:0 6px 6px 0}
+/* market strip */
+.strip{display:flex;gap:8px;overflow-x:auto;padding:12px 2px 6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.strip::-webkit-scrollbar{display:none}
+.tick{flex:0 0 auto;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 10px;min-width:96px}
+.tick .n{font-size:11px;color:var(--dim)}
+.tick .v{font-family:var(--mono);font-size:14px;color:#e6edf3;margin-top:2px}
+.tick .c{font-family:var(--mono);font-size:12px;margin-top:1px}
+.up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--dim)}
+.snapt{font-family:var(--mono);font-size:11px;color:var(--dim);padding:0 4px}
+/* panel */
+.panel{position:relative;margin-top:16px;border:1px solid var(--line);border-radius:10px;background:var(--panel);overflow:hidden}
+.ptop{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel2)}
+.ptop .ico{width:16px;height:16px;border-radius:50%;background:#e6edf3}
+.ptop .t{font-size:14px;font-weight:600}
+.ptop .search{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--text);background:transparent;border:1px solid var(--line);border-radius:6px;padding:4px 8px;width:150px;outline:none}
+.ptop .search:focus{border-color:var(--blue)}
+.phead{padding:16px 16px 10px}
+.phead h2{margin:0;font-size:22px;color:#f0f6fc}
+.phead p{margin:6px 0 0;color:var(--dim);font-size:13px}
+.tabs{display:flex;align-items:center;gap:6px;margin:12px 16px 0;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);flex-wrap:wrap}
+.tab{font-size:12px;padding:5px 10px;border-radius:6px;color:var(--text);cursor:pointer;border:1px solid transparent;user-select:none}
+.tab.on{background:#1f6feb;color:#fff}
+.tabs .sp{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--dim)}
+ol.list{list-style:none;margin:12px 0 0;padding:0;position:relative;z-index:2}
+.row{display:flex;gap:12px;padding:14px 16px;border-top:1px solid var(--line);position:relative;opacity:0;transform:translateY(6px);animation:in .5s forwards}
+@keyframes in{to{opacity:1;transform:none}}
+.row.hide{display:none}
+.main{flex:1;min-width:0}
+.ttl{font-size:16px;font-weight:600;line-height:1.4}
+.ttl .ic{display:inline-block;width:12px;height:12px;border:1.5px solid var(--dim);border-radius:2px;margin-right:6px;vertical-align:-1px}
+.why{color:#aeb7c2;font-size:13.5px;line-height:1.6;margin-top:5px}
+.imp{color:var(--dim);font-size:12.5px;line-height:1.55;margin-top:4px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center}
+.tg{font-size:11.5px;padding:2px 7px;border-radius:999px;border:1px solid var(--line);color:var(--text);white-space:nowrap}
+.tg.src{font-family:var(--sans);color:var(--dim)} .tg.src i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
+.tg.src a{color:inherit}
+.tg.src sup{color:var(--blue);font-size:10px}
+.tg.bull{color:var(--up);border-color:#5a2526;background:#1d0f10}
+.tg.bear{color:var(--down);border-color:#1f4a33;background:#0d1a13}
+.side{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:8px}
+.badge{font-family:var(--mono);font-size:12px;border:1px solid #30363d;background:#21262d;border-radius:6px;padding:4px 10px;color:#e6edf3;white-space:nowrap}
+.badge.top3{border-color:#6e3b10;background:#2a1a08;color:var(--yellow)}
+.senti{font-size:11px;font-family:var(--mono);white-space:nowrap}
+/* keyword flicker */
+.kw{border-radius:2px;transition:all .15s}
+.kw.h1{outline:1px solid var(--cyan);color:#e6f7ff}
+.kw.h2{background:var(--pink);color:#fff}
+.kw.h3{color:var(--yellow);font-style:italic}
+.kw.h4{background:#39c5e655;color:#fff}
+canvas#net{position:absolute;inset:0;width:100%;height:100%;z-index:3;pointer-events:none}
+@media (max-width:640px){canvas#net{opacity:.85}}
+footer{margin-top:18px;font-size:12.5px;color:var(--dim);line-height:1.7;padding:0 4px}
+footer .srcs{font-family:var(--mono);font-size:11px;margin-top:8px;display:flex;flex-wrap:wrap;gap:4px 12px}
+footer .srcs span{white-space:nowrap}
+.disc{margin-top:10px;color:#9aa4ae}
+@media (max-width:640px){
+ .wrap{padding-left:10px;padding-right:10px}
+ .stats{grid-template-columns:repeat(3,1fr);row-gap:12px;padding-top:8px}
+ .stat .num{font-size:24px}
+ .stat .lbl{font-size:10px;letter-spacing:.06em}
+ h1{font-size:20px}
+ .mood{font-size:13.5px}
+ .row{padding:12px 12px;gap:8px}
+ .ttl{font-size:15px}
+ .why{font-size:13px}
+ .phead{padding:12px 12px 4px} .phead h2{font-size:18px} .phead p{font-size:12px} .tabs{margin:8px 12px 0;padding:6px} .tab{padding:4px 9px}
+ header{padding-top:12px} .meta{font-size:11px}
+ .ptop .search{width:120px}
+ .imp{display:none}
+ .row.open .imp{display:block}
+}
+@media (prefers-reduced-motion:reduce){.row{animation:none;opacity:1;transform:none}h1 .dot{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="stats" id="stats"></section>
+  <header>
+    <h1><span class="dot"></span>A股盘前热点 · Top 20</h1>
+    <div class="meta" id="meta"></div>
+    <div class="mood" id="mood"></div>
+  </header>
+  <div class="strip" id="strip"></div>
+  <div class="snapt" id="snapt"></div>
+  <section class="panel" id="panel">
+    <canvas id="net"></canvas>
+    <div class="ptop"><span class="ico"></span><span class="t">Trending</span><input class="search" id="q" placeholder="/ 搜索关键词" aria-label="搜索"></div>
+    <div class="phead"><h2>今日热点</h2><p id="sub"></p></div>
+    <div class="tabs" id="tabs">
+      <span class="tab on" data-f="all">全部</span><span class="tab" data-f="bull">利好</span><span class="tab" data-f="bear">利空</span><span class="tab" data-f="mixed">多空交织</span>
+      <span class="sp" id="tabsp"></span>
+    </div>
+    <ol class="list" id="list"></ol>
+  </section>
+  <footer id="foot"></footer>
+</div>
+<script id="embedded" type="application/json">{"date": "2026-10-08", "window": {"start": "2026-10-08 15:00", "end": "2026-10-08 23:40"}, "generated": "2026-10-08 23:46", "mood": "今天A股节后首日放量下跌（沪指 -0.79% 报3811.90，创业板指 -3.15%，科创50 -4.82%，成交1.68万亿），AI硬件和光通信领跌，油气、电池、航运、银行逆势走强；晚间外围偏避险：油价大涨、海外长债收益率走高、美联储官员放鹰，中概股和A50期货小幅走弱，明天开盘情绪大概率偏谨慎，资金继续往资源、能源方向切换。", "trading_note": "明天10月9日（周五）是A股交易日（已核对深交所交易日历）；10月10日（周六）休市，下一交易日为10月12日（周一）。", "disclaimer": "内容仅供参考，不构成投资建议。", "counters": {"sources": 8, "raw": 2769, "events": 1255, "chars": 174253, "top": 20}, "source_status": [{"key": "cls", "name": "财联社电报", "ok": true, "n": 322}, {"key": "eastmoney", "name": "东方财富快讯", "ok": true, "n": 337}, {"key": "sina", "name": "新浪财经7x24", "ok": true, "n": 1286}, {"key": "wallstreetcn", "name": "华尔街见闻", "ok": true, "n": 248}, {"key": "stcn", "name": "证券时报快讯", "ok": true, "n": 193}, {"key": "govcn", "name": "中国政府网", "ok": true, "n": 1}, {"key": "pbc", "name": "中国人民银行", "ok": true, "n": 1}, {"key": "eastmoney_ann", "name": "上市公司公告", "ok": true, "n": 382}], "snapshot": [{"label": "道指", "last": 50980.7695, "chg_pct": -0.39, "time": "2026-10-08 23:37:26"}, {"label": "纳指", "last": 27375.0212, "chg_pct": -0.59, "time": "2026-10-08 23:37:33"}, {"label": "标普500", "last": 7771.7598, "chg_pct": -0.38, "time": "2026-10-08 23:37:26"}, {"label": "金龙指数", "last": 5573.23, "chg_pct": -1.15, "time": "2026-10-08 23:37:22"}, {"label": "A50期货", "last": 13696.34, "chg_pct": -0.15, "time": "2026-10-08 23:37:35"}, {"label": "COMEX黄金", "last": 4138.513, "chg_pct": -0.05, "time": "2026-10-08 23:37:35"}, {"label": "WTI原油", "last": 92.782, "chg_pct": 5.1, "time": "2026-10-08 23:37:35"}, {"label": "USD/CNH", "last": 6.7059, "chg_pct": 0.05, "time": "2026-10-08 23:37:31"}], "snapshot_time": "2026-10-08 23:37:35", "next_trading_days": ["2026-10-09", "2026-10-12", "2026-10-13"], "items": [{"rank": 1, "title": "央行发布《关于人民币汇率的政策立场》", "why": "今天17:48央行以长文阐明汇率立场：中国“从不搞竞争性货币贬值”，不预设汇率目标，重点防范短期急剧贬值，同时直接反驳“人民币低估”的说法。这有助于稳定汇率预期，也是在为中美、中欧经贸博弈定调。", "impact": "利好：外资偏好的核心资产（银行、消费龙头）和人民币资产，以及外币负债较多的航空公司；对依赖贬值逻辑的出口链偏中性。", "sentiment": "bull", "bull": ["人民币资产", "银行", "消费龙头", "航空"], "bear": [], "sources": [{"name": "中国人民银行", "url": "https://www.pbc.gov.cn/goutongjiaoliu/113456/113469/2026100816231113295/index.html"}]}, {"rank": 2, "title": "国际油价大涨：布伦特突破105美元，WTI日内涨超5%", "why": "海湾地区航运遇袭，加上市场担心美国飓风导致石油停产，WTI涨约5.5%至93美元上方，布伦特报105.7美元。伊朗称仍在评估美方“七日内重开霍尔木兹海峡”的提议；国内能化夜盘甲醇收涨7.17%、LPG涨5.84%。", "impact": "利好：油气开采与油服（中国海油、中国石油、中海油服）、煤化工替代；利空：航空、炼化下游、化纤和塑料加工。", "sentiment": "mixed", "bull": ["油气开采", "油服", "煤化工"], "bear": ["航空", "炼化下游", "化纤"], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuptat7513478.shtml"}, {"name": "华尔街见闻", "url": "https://wallstreetcn.com/livenews/3175613"}, {"name": "华尔街见闻", "url": "https://wallstreetcn.com/livenews/3175716"}]}, {"rank": 3, "title": "光芯片“FCC限制”传闻继续发酵，龙头公司集体回应", "why": "摩根士丹利一份纪要称美国FCC可能从3.2T光模块开始限制、要求65%的BOM来自美国，今天A股光通信重挫（源杰科技、长光华芯20cm跌停，东山精密跌停）。晚间东山精密、长光华芯回应称这只是非官方的政策讨论，3.2T要到2028-2029年才放量。美股光通信盘中同步走弱，费城半导体指数跌超2%。", "impact": "短线利空：CPO和光模块（中际旭创、新易盛、天孚通信、源杰科技）；明天看回应能否止跌。", "sentiment": "bear", "bull": [], "bear": ["光模块/CPO", "光芯片"], "sources": [{"name": "华尔街见闻", "url": "https://wallstreetcn.com/livenews/3175524"}, {"name": "财联社", "url": "https://www.cls.cn/detail/2499744"}, {"name": "华尔街见闻", "url": "https://wallstreetcn.com/livenews/3175677"}]}, {"rank": 4, "title": "美联储沃勒：仍需进一步加息；英国30年期国债收益率创1998年来新高", "why": "沃勒称通胀仍高，AI建设和能源冲击推高通胀，预计还要加息（点阵图或指向2027年初加息）。英国30年期国债收益率升至6.047%，美国30年期盘中最高5.73%。全球利率上行会压制高估值成长股。", "impact": "利空：高估值科技和创新药等成长板块；相对利好：银行、高股息红利资产。", "sentiment": "bear", "bull": ["银行", "高股息"], "bear": ["高估值成长", "创新药"], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupaez7624783.shtml"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuphnx7599775.shtml"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuphnz4352975.shtml"}]}, {"rank": 5, "title": "外围盘面：美股低开走弱，中概普跌，A50期货小跌，恒生科技创近两年新低", "why": "截至北京时间23:37（美股还在交易中），道指 -0.39%，纳指 -0.59%，标普500 -0.38%，纳斯达克中国金龙指数 -1.15%（文远知行、小马智行跌超5%），富时中国A50期货 -0.15%。港股恒生科技收跌2.89%，创2024年9月26日以来新低。离岸人民币约6.706。", "impact": "明天A股开盘偏弱，港股科技和半导体映射承压。", "sentiment": "bear", "bull": [], "bear": ["港股科技", "半导体映射"], "sources": [{"name": "新浪财经行情接口（hq.sinajs.cn）", "url": ""}, {"name": "东方财富", "url": "https://finance.eastmoney.com/a/202610083890012570.html"}, {"name": "华尔街见闻", "url": "https://wallstreetcn.com/livenews/3175286"}]}, {"rank": 6, "title": "一汽、丰田、广汽签署三方战略联盟：广汽拟发行股份收购一汽丰田50%股权", "why": "这是央地车企之间少见的大型合资股权整合。交易完成后，一汽成为广汽重要战略股东，两家丰田合资公司将在研发、采购、生产、销售上协同，对广汽的规模和盈利影响较大。", "impact": "利好：广汽集团、汽车整车板块的国企整合预期；需关注是否停牌及具体交易作价。", "sentiment": "bull", "bull": ["广汽集团", "汽车整车"], "bear": [], "sources": [{"name": "证券时报", "url": "https://www.stcn.com/article/detail/4208299.html"}]}, {"rank": 7, "title": "上海国盛拟以190.99亿元增资华虹集团", "why": "增资后，国盛对华虹集团的直接持股从15.29%升至41.66%，间接持有华虹公司的比例升至10.22%。上海国资真金白银加码晶圆制造，对今天被情绪错杀的半导体板块是一定支撑。", "impact": "利好：华虹公司（688347）、上海国资半导体链。", "sentiment": "bull", "bull": ["华虹公司", "晶圆制造"], "bear": [], "sources": [{"name": "证券时报", "url": "https://www.stcn.com/article/detail/4208360.html"}]}, {"rank": 8, "title": "油运运价再创纪录：美湾至亚太VLCC运费新高，马士基燃油附加费上调至20%", "why": "阿格斯数据显示，美湾至亚太的VLCC包干运费涨至8100万美元，是2017年有该数据以来最高；马士基10月12日起把紧急燃油附加费上调到20%。今天中远海能、招商南油已涨停，基本面在继续强化。", "impact": "利好：油运（中远海能、招商南油、招商轮船）；利空：外贸货主和航空。", "sentiment": "bull", "bull": ["油运"], "bear": ["外贸货主"], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuphnx7584605.shtml"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupafc4329081.shtml"}]}, {"rank": 9, "title": "三季报预告首批密集披露，半导体、PCB、有机硅亮眼", "why": "晶晨股份前三季度净利预增80.58%-87.74%，全年营收有望突破100亿；行云科技预计前三季度净利2.4亿-2.9亿元，同比扭亏，服务器业务爆发；本川智能预增190%-335%；东岳硅材预计净利5.47亿-5.67亿元；广汇能源预增166.83%-176.71%。业绩期会给AI硬件提供基本面对冲。", "impact": "利好：晶晨股份、行云科技、本川智能、东岳硅材（有机硅涨价链）、广汇能源。", "sentiment": "bull", "bull": ["半导体", "PCB", "有机硅"], "bear": [], "sources": [{"name": "财联社", "url": "https://www.cls.cn/detail/2499422"}, {"name": "财联社", "url": "https://www.cls.cn/detail/2499835"}, {"name": "东方财富", "url": "https://data.eastmoney.com/notices/detail/600256/AN202610081830208754.html"}]}, {"rank": 10, "title": "锂电链：固态电池逆势爆发，但多家公司提示风险；龙蟠科技签下最多56.78万吨磷酸铁锂长单", "why": "节前发布的《新型电池产业发展“十五五”规划》在持续发酵。龙蟠科技子公司与吉曜通行约定2026-2030年供应37.86-56.78万吨磷酸铁锂；广期所就氢氧化锂期货、期权征求意见。另一方面，维科技术、金龙羽、上海洗霸发公告提示固态电池业务占比小、尚未形成稳定收入，短线炒作有降温风险。", "impact": "利好：龙蟠科技、锂盐及磷酸铁锂；警惕：概念股高位分化。", "sentiment": "mixed", "bull": ["磷酸铁锂", "锂盐"], "bear": ["固态电池概念高位"], "sources": [{"name": "财联社", "url": "https://www.cls.cn/detail/2499724"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupaez7603952.shtml"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupaez7650643.shtml"}]}, {"rank": 11, "title": "台积电三季度营收同比增长51%；格芯与台积电签20亿美元硅中介层协议", "why": "AI基础设施需求依旧强劲，说明算力景气度没有被传闻改变；格芯将在美国为台积电CoWoS先进封装供应硅中介层，先进封装扩产在加速。", "impact": "利好：先进封装和算力芯片链（长电科技、通富微电），可部分对冲第3条的情绪冲击。", "sentiment": "bull", "bull": ["先进封装", "算力芯片"], "bear": [], "sources": [{"name": "华尔街见闻", "url": "https://wallstreetcn.com/livenews/3175646"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupnuv7531354.shtml"}]}, {"rank": 12, "title": "尊界V800刹车踏板支架断裂测试引发关注，江淮汽车跌停", "why": "懂车帝实测中，3辆车在同一位置出现断裂。尊界晚间声明称未发生用户实际故障，将优化设计并免费升级。这事关华为系高端车的品牌口碑。", "impact": "利空：江淮汽车，以及鸿蒙智行产业链短期情绪。", "sentiment": "bear", "bull": [], "bear": ["江淮汽车", "鸿蒙智行链"], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupnuv7573326.shtml"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuphnx7639772.shtml"}]}, {"rank": 13, "title": "风电订单放量：时代新材三季度签约叶片合同43.94亿元", "why": "其中陆上风电38.60亿元、海外3.20亿元；远东股份9月中标签约14.12亿元。机构认为风电招标放量叠加欧洲海风催化，行业拐点信号正在积累。", "impact": "利好：风电叶片、整机、海缆（时代新材、东方电缆、金风科技）。", "sentiment": "bull", "bull": ["风电叶片", "海缆", "整机"], "bear": [], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupaez7605227.shtml"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupafc4435497.shtml"}, {"name": "财联社", "url": "https://www.cls.cn/detail/2499457"}]}, {"rank": 14, "title": "中证协：外资持有境内股票4.66万亿元，比去年底增近30%；毕马威：上半年券商营收增约31%", "why": "外资回流和券商业绩高增长是券商板块的基本面支撑；上半年150家券商合计营收3298亿元，净利1387亿元。", "impact": "利好：券商（中信证券、华泰证券、东方财富）。", "sentiment": "bull", "bull": ["券商"], "bear": [], "sources": [{"name": "证券时报", "url": "https://www.stcn.com/article/detail/4207715.html"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuptav4243861.shtml"}]}, {"rank": 15, "title": "世贸组织把2026年全球货物贸易增速预期从1.9%大幅上调至3.9%", "why": "上调主要来自供应链调整和AI领域投资强劲，2027年预计增长4.1%；但中东战事拖累服务贸易，预期下调至3.3%。", "impact": "利好：出口链、AI服务器和PCB、港口（今天广州港公告9月集装箱吞吐量同比增长19.6%）。", "sentiment": "bull", "bull": ["出口链", "AI服务器", "港口"], "bear": [], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupnux4338921.shtml"}]}, {"rank": 16, "title": "民航局印发《国内航线航班评审优化措施》，节后机票价格“跳水”", "why": "新措施按承运人数量、客座率等调控航段准入和航班量，抑制同质化竞争，中长期利好票价；但节后淡季机票裸价低至两三百元，叠加油价大涨，短期成本压力大。", "impact": "中长期利好、短期承压：航空（中国国航、南方航空、春秋航空）。", "sentiment": "mixed", "bull": ["航空(中长期)"], "bear": ["航空(短期)"], "sources": [{"name": "财联社", "url": "https://www.cls.cn/detail/2499759"}, {"name": "华尔街见闻", "url": "https://wallstreetcn.com/livenews/3175699"}]}, {"rank": 17, "title": "橡胶价格创9年新高，60余家轮胎企业集体涨价", "why": "沪胶主力报20145元/吨，年内涨超28%；9月以来轮胎企业发出70多份涨价函，幅度2%-5%，成本传导能力是关键。", "impact": "利好：天然橡胶上游（海南橡胶）；轮胎（赛轮轮胎、玲珑轮胎）短期成本承压、提价对冲。", "sentiment": "mixed", "bull": ["天然橡胶"], "bear": ["轮胎成本"], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuptav4279357.shtml"}]}, {"rank": 18, "title": "世界气象组织：厄尔尼诺将在12月见顶，或为1950年以来最强之一", "why": "持续到2027年2月的概率接近100%，可能扰动全球农产品产量（糖、棕榈油、谷物）和能源需求。", "impact": "利好：农业种植和种业（北大荒、隆平高科）、糖业；关注电力和天然气需求。", "sentiment": "bull", "bull": ["种业", "糖业"], "bear": [], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniupafc4317031.shtml"}]}, {"rank": 19, "title": "美国加码量子计算：五角大楼宣布3.5亿美元量子举措，英伟达5年投入10亿美元", "why": "美国国防部与PsiQuantum签署1.5亿美元有条件贷款；英伟达承诺投入10亿美元支持超级智能、量子计算等科研，海外量子主题在升温。", "impact": "利好：A股量子科技主题（如国盾量子）的情绪映射。", "sentiment": "bull", "bull": ["量子科技"], "bear": [], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuptat7508135.shtml"}, {"name": "华尔街见闻", "url": "https://wallstreetcn.com/livenews/3175704"}]}, {"rank": 20, "title": "中欧经贸密集接触：王文涛会见欧委会贸易委员谢夫乔维奇", "why": "商务部副部长凌激同日与欧方会谈，为中欧贸易投资磋商机制第二次例会做准备；何立峰同英国财政大臣视频通话。电动车、光伏等贸易摩擦有望通过对话缓和。", "impact": "潜在利好：对欧出口的新能源车、锂电、光伏（比亚迪、宁德时代）。", "sentiment": "bull", "bull": ["新能源车", "锂电", "光伏"], "bear": [], "sources": [{"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuphnx7625455.shtml"}, {"name": "新浪财经", "url": "https://finance.sina.com.cn/7x24/2026-10-08/doc-iniuphnx7563896.shtml"}]}]}</script>
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const SRC_COLORS={'财联社':'#f0524f','新浪财经':'#e3b341','华尔街见闻':'#4493f8','证券时报':'#a371f7','东方财富':'#39c5e6','中国人民银行':'#ff4f8b','中国政府网':'#ff7b72'};
+const srcColor=n=>{for(const k in SRC_COLORS){if(n.indexOf(k)>=0)return SRC_COLORS[k]}return '#8b949e'};
+const SENT={bull:['利好','up'],bear:['利空','down'],mixed:['多空交织','flat']};
+
+function load(){
+  return fetch('data/latest.json',{cache:'no-store'}).then(r=>{if(!r.ok)throw 0;return r.json()})
+   .catch(()=>JSON.parse(document.getElementById('embedded').textContent));
+}
+function fmtNum(n){return Math.round(n).toLocaleString('en-US')}
+function countUp(el,to,ms){
+  const t0=performance.now();
+  (function f(t){const p=Math.min(1,(t-t0)/ms),e=1-Math.pow(1-p,3);el.textContent=fmtNum(to*e);if(p<1)requestAnimationFrame(f)})(t0);
+}
+function render(d){
+  const C=d.counters||{};
+  const stats=[['新闻源',C.sources],['抓取条数',C.raw],['去重事件',C.events],['读取字数',C.chars],['入选 TOP20',C.top]];
+  $('#stats').innerHTML=stats.map(s=>'<div class="stat"><div class="lbl">'+esc(s[0])+'</div><div class="num" data-to="'+(+s[1]||0)+'">0</div></div>').join('');
+  document.querySelectorAll('.stat .num').forEach((el,i)=>setTimeout(()=>countUp(el,+el.dataset.to,1400+i*150),150*i));
+  const ws=d.window.start||'',we=d.window.end||'';const weS=ws.slice(0,10)===we.slice(0,10)?we.slice(11):we;
+  $('#meta').textContent='窗口 '+ws+' → '+weS+' 北京时间 · 生成 '+(d.generated||'').slice(5);
+  $('#mood').textContent=d.mood||'';
+  $('#strip').innerHTML=(d.snapshot||[]).map(s=>{
+    const c=s.chg_pct, cls=c>0?'up':c<0?'down':'flat';
+    const v=s.last>=1000?s.last.toLocaleString('en-US',{maximumFractionDigits:2}):(+s.last).toFixed(s.last<20?4:2);
+    return '<div class="tick"><div class="n">'+esc(s.label)+'</div><div class="v">'+esc(v)+'</div><div class="c '+cls+'">'+(c==null?'—':(c>0?'+':'')+c.toFixed(2)+'%')+'</div></div>'}).join('');
+  $('#snapt').textContent=d.snapshot_time?('行情快照 '+d.snapshot_time+' 北京时间（来源：新浪财经行情）'):'';
+  $('#sub').textContent='从 '+fmtNum(C.events||0)+' 个去重事件中按影响力、意外性、时效、权威性筛选';
+  const items=d.items||[];
+  $('#list').innerHTML=items.map((it,i)=>{
+    const s=SENT[it.sentiment]||SENT.mixed;
+    const link=(it.sources||[]).find(x=>x.url);
+    const kws=[].concat(it.bull||[],it.bear||[]);
+    const why=wrapKw(esc(it.why),it);
+    const groups=[];(it.sources||[]).forEach(x=>{let g=groups.find(g=>g.name===x.name);if(!g){g={name:x.name,urls:[]};groups.push(g)}if(x.url)g.urls.push(x.url)});
+    const A=(u,t)=>'<a href="'+esc(u)+'" target="_blank" rel="noopener">'+t+'</a>';
+    const tags=groups.map(g=>'<span class="tg src"><i style="background:'+srcColor(g.name)+'"></i>'+(g.urls.length?A(g.urls[0],esc(g.name)):esc(g.name))
+        +(g.urls.length>1?g.urls.slice(1).map((u,k)=>' '+A(u,'<sup>'+(k+2)+'</sup>')).join(''):'')+'</span>').join('')
+      +(it.bull||[]).map(t=>'<span class="tg bull">利好·'+esc(t)+'</span>').join('')
+      +(it.bear||[]).map(t=>'<span class="tg bear">利空·'+esc(t)+'</span>').join('');
+    return '<li class="row" data-s="'+esc(it.sentiment)+'" style="animation-delay:'+(0.25+i*0.05)+'s">'
+      +'<div class="main"><div class="ttl"><span class="ic"></span>'+(link?'<a href="'+esc(link.url)+'" target="_blank" rel="noopener">'+esc(it.title)+'</a>':esc(it.title))+'</div>'
+      +'<div class="why">'+why+'</div><div class="imp">'+esc(it.impact)+'</div><div class="tags">'+tags+'</div></div>'
+      +'<div class="side"><span class="badge'+(it.rank<=3?' top3':'')+'">#'+it.rank+'</span><span class="senti '+s[1]+'">'+s[0]+'</span></div></li>'}).join('');
+  $('#tabsp').textContent=items.length+' items';
+  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===t));
+    const f=t.dataset.f;document.querySelectorAll('.row').forEach(r=>r.classList.toggle('hide',f!=='all'&&r.dataset.s!==f));
+    setTimeout(layoutNet,30);
+  });
+  document.querySelectorAll('.row').forEach(r=>r.addEventListener('click',e=>{if(e.target.closest('a'))return;r.classList.toggle('open');setTimeout(layoutNet,30)}));
+  const q=$('#q');q.oninput=()=>{const v=q.value.trim().toLowerCase();document.querySelectorAll('.row').forEach(r=>r.classList.toggle('hide',!!v&&r.textContent.toLowerCase().indexOf(v)<0));setTimeout(layoutNet,30)};
+  addEventListener('keydown',e=>{if(e.key==='/'&&document.activeElement!==q){e.preventDefault();q.focus()}});
+  const st=d.source_status||[];
+  $('#foot').innerHTML=(d.trading_note?'<div>📅 '+esc(d.trading_note)+'</div>':'')
+    +'<div class="srcs">'+st.map(s=>'<span class="'+(s.ok?'down':'up')+'">'+(s.ok?'●':'○')+' '+esc(s.name)+' '+(s.ok?s.n:'失败')+'</span>').join('')+'</div>'
+    +'<div class="disc">'+esc(d.disclaimer)+'</div>';
+  initNet(items);flicker();
+}
+// wrap keywords (numbers/percent and a few domain words) in spans for the flicker effect
+function wrapKw(html,it){
+  const words=['央行','油价','布伦特','加息','光模块','光芯片','固态电池','华虹','广汽','VLCC','风电','外资','券商','台积电','厄尔尼诺','量子','橡胶','跌停','涨停','新高','扭亏','预增'];
+  let out=html.replace(/(\d+(?:\.\d+)?(?:%|亿元|亿|万吨|美元))/g,'<span class="kw">$1</span>');
+  words.forEach(w=>{out=out.replace(new RegExp('(^|[^>])('+w+')(?![^<]*<\\/span>)'),'$1<span class="kw">$2</span>')});
+  return out;
+}
+function flicker(){
+  const kws=[...document.querySelectorAll('.kw')];if(!kws.length)return;
+  const cls=['h1','h2','h3','h4'];
+  setInterval(()=>{
+    for(let k=0;k<3;k++){const el=kws[Math.random()*kws.length|0],c=cls[Math.random()*4|0];
+      el.classList.add(c);setTimeout(()=>el.classList.remove(c),500+Math.random()*900);}
+  },650);
+}
+// network overlay: source nodes drift and link to the rows they support
+let NET=null;
+function initNet(items){
+  const cv=$('#net'),ctx=cv.getContext('2d');
+  const names=[...new Set(items.flatMap(it=>(it.sources||[]).map(s=>s.name.replace(/（.*$/,''))))];
+  const nodes=names.map((n,i)=>({name:n,color:srcColor(n),ax:0.45+0.4*Math.random(),ay:(i+0.5)/names.length,ph:Math.random()*6.28}));
+  const LABELS=['crawl','dedupe','rank','parse','利好','利空','agents.','fetch','merge'];
+  NET={cv,ctx,nodes,items,rows:[],labels:LABELS.map(t=>({t,n:Math.random()*nodes.length|0,life:0}))};
+  layoutNet();addEventListener('resize',layoutNet);
+  requestAnimationFrame(drawNet);
+}
+function layoutNet(){
+  if(!NET)return;const {cv}=NET,p=$('#panel'),dpr=Math.min(2,devicePixelRatio||1);
+  const W=p.clientWidth,H=p.clientHeight;cv.width=W*dpr;cv.height=H*dpr;NET.ctx.setTransform(dpr,0,0,dpr,0,0);NET.W=W;NET.H=H;
+  const pr=p.getBoundingClientRect();
+  NET.rows=[...document.querySelectorAll('.row')].map((r,i)=>{if(r.classList.contains('hide'))return null;const b=r.querySelector('.badge').getBoundingClientRect();
+    return {x:b.left-pr.left-6,y:b.top-pr.top+b.height/2,srcs:(NET.items[i].sources||[]).map(s=>s.name.replace(/（.*$/,''))}}).filter(Boolean);
+}
+function drawNet(t){
+  const {ctx,nodes,rows,W,H}=NET;ctx.clearRect(0,0,W,H);
+  const narrow=W<640;
+  nodes.forEach((n,i)=>{n.x=narrow?W-34+8*Math.sin(t/3000+n.ph):W*(n.ax+0.05*Math.sin(t/6000+n.ph));n.y=H*(0.06+0.9*n.ay)+18*Math.sin(t/4000+n.ph*2)});
+  ctx.lineWidth=1;
+  rows.forEach((r,ri)=>{r.srcs.forEach(sn=>{const n=nodes.find(x=>x.name===sn);if(!n)return;
+    if(Math.abs(n.y-r.y)>H*0.35)return; // keep the web local, like the video
+    ctx.strokeStyle='rgba(57,197,230,'+(narrow?0.18:0.3)+')';ctx.beginPath();ctx.moveTo(n.x,n.y);ctx.lineTo(r.x,r.y);ctx.stroke();
+    const p=((t/2200)+ri*0.13)%1;ctx.fillStyle='rgba(57,197,230,0.75)';ctx.beginPath();ctx.arc(n.x+(r.x-n.x)*p,n.y+(r.y-n.y)*p,1.6,0,6.28);ctx.fill();
+    ctx.fillStyle='rgba(255,79,139,0.75)';ctx.beginPath();ctx.arc(r.x,r.y,2.4,0,6.28);ctx.fill();})});
+  ctx.font='10px '+getComputedStyle(document.body).getPropertyValue('--mono');
+  nodes.forEach(n=>{ctx.fillStyle=n.color;ctx.globalAlpha=.85;ctx.beginPath();ctx.arc(n.x,n.y,3.4,0,6.28);ctx.fill();
+    ctx.strokeStyle=n.color;ctx.globalAlpha=.25;ctx.beginPath();ctx.arc(n.x,n.y,7+2*Math.sin(t/500+n.ph),0,6.28);ctx.stroke();ctx.globalAlpha=1});
+  NET.labels.forEach(l=>{l.life-=1;if(l.life<=0){if(Math.random()<0.01){l.life=60+Math.random()*80;l.n=Math.random()*nodes.length|0}return}
+    const n=nodes[l.n];if(!n)return;ctx.globalAlpha=Math.min(1,l.life/20)*0.9;ctx.strokeStyle='#39c5e6';ctx.fillStyle='rgba(7,9,13,.85)';
+    const w=ctx.measureText(l.t).width+8,lx=(n.x+8+w>W-4)?n.x-8-w:n.x+8;ctx.fillRect(lx,n.y-16,w,14);ctx.strokeRect(lx,n.y-16,w,14);ctx.fillStyle='#bfefff';ctx.fillText(l.t,lx+4,n.y-5.5);ctx.globalAlpha=1});
+  requestAnimationFrame(drawNet);
+}
+load().then(render).then(()=>setTimeout(layoutNet,1200));
+})();
+</script>
+</body>
+</html>
