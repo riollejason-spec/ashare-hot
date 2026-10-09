@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#061226">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://*.eastmoney.com; connect-src https://*.eastmoney.com; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<link rel="icon" href="data:,">
+<title>验证板 · 模拟盘</title>
+<style>
+:root{--bg:#061226;--card:#0d2347cc;--line:#1d3a66;--ink:#e6f3ff;--dim:#8aa6c8;--sky:#8fd8ff;--sky2:#5cc4ff;--up:#ff5a5f;--down:#2bd47d;--gold:#ffd166;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+[hidden]{display:none!important}*{box-sizing:border-box}
+html,body{margin:0;background:radial-gradient(1200px 700px at 30% -10%,#12366b 0%,var(--bg) 55%) fixed,var(--bg);color:var(--ink);font:14px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;-webkit-text-size-adjust:100%}
+.wrap{max-width:1180px;margin:0 auto;padding:max(10px,env(safe-area-inset-top)) 14px 40px}
+header.top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0 10px;border-bottom:1px solid var(--line)}
+.nav a{display:inline-flex;padding:6px 10px;border:1px solid var(--line);border-radius:999px;text-decoration:none;font-size:13px;color:var(--sky);background:#0b2245;margin-right:4px}
+h1{margin:0;font-size:19px;text-shadow:0 0 14px #5cc4ff88}h1 small{font-size:12px;color:var(--dim);font-weight:400;margin-left:6px}
+.sp{flex:1}.lockb{background:none;border:1px solid var(--line);color:var(--dim);border-radius:999px;padding:5px 10px;font-size:12px;cursor:pointer}
+.banner{margin:12px 0;padding:12px 14px;border-radius:12px;border:1px solid #a07a1f;background:linear-gradient(90deg,#2a2108cc,#1a2a48cc);color:var(--gold);font-size:15px;font-weight:600;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.banner small{font-weight:400;color:#e8d7a6;font-size:12.5px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 40px #0008;margin-top:12px;overflow:hidden}
+.ph{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line);font-size:13px;color:var(--dim)}.ph b{color:var(--ink);font-size:14px}
+.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:10px 12px}
+.cd{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#0a1e3d}.cd b{display:block;font-family:var(--mono);font-size:19px}.cd small{color:var(--dim);font-size:11.5px}
+.u{color:var(--up)}.d{color:var(--down)}.z{color:var(--dim)}
+table.t{width:100%;border-collapse:collapse;font-size:13px}
+table.t th{background:#0b2245;color:var(--dim);font-weight:500;font-size:11.5px;text-align:right;padding:7px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.t td{padding:7px 6px;border-bottom:1px solid #15305a;text-align:right;font-family:var(--mono);font-size:12.5px;white-space:nowrap}
+table.t td.l,table.t th.l{text-align:left}table.t td.w{white-space:normal;font-family:-apple-system,"PingFang SC",sans-serif;min-width:180px}
+.scroll{overflow:auto}
+.empty{padding:16px 12px;color:var(--dim);font-size:13px}
+#chart{display:block;width:100%;height:240px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;padding:6px 12px 10px;font-size:12px;color:var(--dim)}.legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px}
+.kv{padding:10px 12px;font-size:12.5px;color:#c6d9ee;line-height:1.8}.kv code{font-family:var(--mono);font-size:11.5px;color:var(--sky);word-break:break-all}
+.ok{color:var(--down)}.bad{color:var(--up)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:2px 9px;border-radius:999px;border:1px solid var(--line);font-size:11.5px;font-family:var(--mono);color:var(--dim)}
+.disc{margin-top:12px;font-size:12px;color:var(--dim)}
+.lock{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;z-index:80}
+.lk{width:min(360px,92vw);text-align:center;background:#0b2245cc;border:1px solid var(--line);border-radius:18px;padding:26px 22px;box-shadow:0 0 40px #5cc4ff33}
+.lk h2{margin:6px 0 2px;font-size:18px}.lk p{margin:0 0 14px;color:var(--dim);font-size:13px}
+.lk input[type=password]{width:100%;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:#061226;color:var(--ink);font-size:16px}
+.lk button{width:100%;margin-top:10px;padding:11px;border:0;border-radius:10px;background:linear-gradient(90deg,#2a7fd4,#5cc4ff);color:#fff;font-size:15px;cursor:pointer}
+.lk label{display:flex;gap:8px;align-items:center;margin-top:10px;font-size:13px;color:var(--dim)}.lke{min-height:20px;margin-top:8px;color:#ff9a9a;font-size:13px}
+@media (max-width:720px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.wrap{padding-left:8px;padding-right:8px}h1{font-size:17px}.cd b{font-size:17px}}
+</style>
+</head>
+<body>
+<div class="lock" id="lock" hidden><form class="lk" id="lkf" autocomplete="off"><div style="font-size:44px">✅</div><h2>验证板</h2><p>输入访问密码（与热点看板相同）</p>
+<input type="password" id="lkp" placeholder="访问密码" autocomplete="current-password"><label><input type="checkbox" id="lkr"> 在此设备上记住</label>
+<button id="lkb" type="submit">解锁</button><div class="lke" id="lke" role="alert"></div></form></div>
+<div class="wrap" hidden>
+  <header class="top"><span class="nav"><a href="../">← 热点看板</a><a href="../brain/">🧠 资金大脑</a></span><h1>✅ 验证板<small id="sub"></small></h1><span class="sp"></span><button class="lockb" id="lockb" hidden>🔒 锁定</button></header>
+  <div class="banner" id="banner"></div>
+  <section class="panel"><div class="ph"><b>账户概览</b><span class="sp"></span><span id="acct"></span></div><div class="cards" id="cards"></div></section>
+  <section class="panel"><div class="ph"><b>净值 vs 基准</b><span class="sp"></span><span>自开户日起归一化</span></div><canvas id="chart"></canvas><div class="legend"><span><i style="background:#8fd8ff"></i>模拟盘净值</span><span><i style="background:#ffd166"></i>沪深300</span><span><i style="background:#c792ea"></i>上证指数</span></div></section>
+  <section class="panel"><div class="ph"><b>当前持仓</b><span class="sp"></span><span class="pill" id="live">—</span></div><div class="scroll" id="pos"></div></section>
+  <section class="panel"><div class="ph"><b>交易记录</b><span class="sp"></span><span id="ntr"></span></div><div class="scroll" id="trades"></div></section>
+  <section class="panel"><div class="ph"><b>决策记录</b><span class="sp"></span><span>每个决策时点一条</span></div><div class="scroll" id="decs"></div></section>
+  <section class="panel"><div class="ph"><b>账本与配置</b></div><div class="kv" id="ledger"></div></section>
+  <div class="disc">模拟盘（paper trading），不涉及真实资金，不构成投资建议。账户状态完全由仅追加、SHA-256 哈希链账本重放得出，历史不可改写。</div>
+</div>
+<script type="application/json" id="embedded">{"enc": {"v": 2, "alg": "AES-256-GCM", "kdf": "PBKDF2-SHA256", "iter": 600000, "salt": "Zb3gKOVU5yUrjd5T+U5bPw==", "iv": "z1o7OBvLxvjRUrSa", "ct": "s5PNC5HnpDrt+T3zoZmB+t+ZE+L1X5x7oiX7gaLCTvnyUFMw2mPk2KMqx0hnfuGkBnqqa5szScZZl4HBKzW8SWpzDfNqPme3kXBaTy0QSrwTKE3qc3EtvElxAz4SKy7pFauh0DbGHpompUemH6iag2NT8P3QxckeuAqNZnj64f1kuiRuWL+ztLHHVW3Z0u1yLajdPBhtqWNPJeOAP+E2gnbF591QN1F8S1mOG8ze5eZQ6OksR27mw4ot59DxUMnTApteLkmRTWOXs8RReviPRG526UQVEChe7mVCaOQBlrX+L8CVyq8GbaD9GEZgqhvUKn/OViJYERdOEqi8LFTw5y3nxCTnEABrXTvd420c6fB+VJVF/K07pY+x/7yS5lyndMJHxC/+93Of2Sxv8Kiis2o7X4mHbHbeXvHXlMlXGPeUFT7B3BM6/SVLTllh2VQkwNru+l7S4kcc5JgHF6Nd0TyFsuFzTjSYHBYhdXpkV0EOM6K/1UegJ7jGfDWqpM/oWm0ekc2ORcm808WS86FbG7JvkOrXISRYyG77xuiKHmQgkTvJ4OLufS++NcpbHG+mx7i8HgnAtLDXpClp6z0VR+vtDWfTaJaQRpnXaxrDg/A5Drka0ugEf6C78WcPMl+Xodzsl9JwKn7wZ9vY6MEq8StJowQfkavGXRJpm2SxM82ZLRbfhmK9JVL8j3+XoSi7rb/6vQzUVSbRcTQXXE7JntXKysx0eSTPyZ19b20BhUKoDAQ7td78t2uxrc/9lyx9GWHCOOgY4BtPahA0AJ2XWW4oOJFmlW87X+QMZgm+uX6w8JIF0Pkf+eMgJD+gNXKMl6Ko3qpJfuHYfhRjkPX3ONvDFOWR4yAPxgrGLMv+AKLyXLVX1xyYHdZVHN4eGKTDrUGz/EKqF03e/YX42oCzCDB71R7w43Y0TEi4scEIu0Rf7tQ3G4Xw3gGBz81Y6mOrwq1+jChAG6PS9DDzzzO4ZM4oFk5Z/KebMMMNSd3XybK2EtU5DpPFTY7huxuAwxUZKABN/IUcBTnxRrjwJTW9zyrmr3PVim+/bpPtFcgqkKMdvCwetLrYfx4mTMiRsg+99VNiGTtofllhHug2TrlvKq9hjf6Ozv3bdg1EMJmV4QyAk1gZxaQP6/v06ficptNK3fHYzzLh95+lSm2KG6yAecd64L4SAlWTTuKoOFVwmlblbSkWDmm6NTKJJrKIhH1/gGAbVDg8ufnIrYNQoN0mPpD8NcI4lJy+/dquge184NtGQ/7gi8bC6zVg5iupgc7XHjtEoZDpRUkJ0WLyH7GfOUVT11tT9VMsTzbk442IuBa38CFOTlSd8kcdnGLyJI+75TrPtzwCkReaVjeMyqu28wf1ZYRkwRUxZqI/J+U3mG9HG/PrIK4oje084mmeHygu0TwbODLTgBLtg1/pDGjDNms9mJqjgOjZszUGX0p3JFEHH4xDgJBd9DYAzloM6gDAoraAWFkqqZefEEwbgHpZgY13LJ2VVX2D1e+C3RPSmQ/fHffD1OnAcCyE/nnYCrMnn+6d8gmw0lWSKEIoh3plKqC7U4RTQOzqZzu2jXMlX90tkZMGqTiE/5pguZMkEDGg3KlmatJeyBLtAjdcr2wswHbl+GzaZq9e9jx63SK0mf6Z3ia0wvnSky738y/kYAHgey2h/ZqP5GXjqbnROOEa9kql7zwURIzt3i5VXbumFQqmw6Ob7cpjn2b1Rw=="}}</script>
+<script>
+(function(){'use strict';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=v=>(v===null||v===undefined||v==='-'||v===''||isNaN(+v))?null:+v;
+const sg=x=>x>0?'+':'';const cls=x=>x==null||x==0?'z':x>0?'u':'d';
+const money=x=>x==null?'—':(+x).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const pct=x=>x==null?'—':sg(x)+(+x).toFixed(2)+'%';
+let D=null,LQ={},timer=null;
+function bj(){const d=new Date(Date.now()+8*3600e3);return{wd:d.getUTCDay(),hm:d.getUTCHours()*60+d.getUTCMinutes()}}
+function trading(){const t=bj();return t.wd>=1&&t.wd<=5&&((t.hm>=555&&t.hm<=690)||(t.hm>=780&&t.hm<=900))}
+const HOSTS=['https://82.push2.eastmoney.com','https://push2his.eastmoney.com'];let JN=0;
+function jsonp(url){return new Promise((res,rej)=>{const cb='__vcb'+(++JN)+Date.now().toString(36);const s=document.createElement('script');const to=setTimeout(()=>{done();rej(0)},8000);function done(){clearTimeout(to);try{delete window[cb]}catch(e){}s.remove()}window[cb]=d=>{done();res(d)};s.onerror=()=>{done();rej(0)};s.src=url+'&cb='+cb;document.head.appendChild(s)})}
+async function em(path){for(const h of HOSTS){const u=h+path+'&_='+Date.now();try{const r=await fetch(u,{cache:'no-store'});const t=await r.text();if(t){const d=JSON.parse(t);if(d&&d.data)return d.data}}catch(e){}try{const d=await jsonp(u);if(d&&d.data)return d.data}catch(e){}}throw 0}
+const secid=p=>((p.exchange||(/^[569]/.test(p.code)?'SH':'SZ')).toUpperCase()==='SH'?'1.':'0.')+p.code;
+async function poll(){const P=(D.positions||[]);if(!P.length){$('#live').textContent=trading()?'无持仓，无需行情':'非交易时段';return}
+  try{const d=await em('/api/qt/ulist.np/get?fltt=2&invt=2&fields=f2,f3,f12,f14,f18,f124&secids='+P.map(secid).join(','));(d.diff||[]).forEach(r=>LQ[r.f12]=r);
+    const ts=Math.max(...(d.diff||[]).map(r=>num(r.f124)||0));$('#live').textContent='实时 '+new Date(ts*1000+8*3600e3).toISOString().slice(11,19)}catch(e){$('#live').textContent='⚠ 行情获取失败，显示收盘估值'}
+  renderPos()}
+function schedule(){clearTimeout(timer);timer=setTimeout(async()=>{if(!document.hidden)await poll();schedule()},trading()?8000:300000)}
+function renderBanner(){const s=D.status||'';const pend=(D.config.pending_confirmation||[]);
+  $('#banner').innerHTML='⚠ '+esc(s)+' <small>模拟盘（paper trading），不构成投资建议。'+(D.config.strategy==='placeholder'?'当前为空策略：规则由 Jason 后续给出，在此之前不下任何单。':'策略：'+esc(D.config.strategy))+(pend.length?' 待确认配置：'+pend.map(esc).join('、')+'。':'')+'</small>'}
+function renderCards(){const tr=D.total_return_pct,mk=D.last_mark_date;
+  const c=[['净值 (NAV)',money(D.nav),''],['可用现金',money(D.cash),''],['总收益率',pct(tr),cls(tr)],['今日盈亏',(D.today_pnl>0?'+':'')+money(D.today_pnl),cls(D.today_pnl)],
+   ['最大回撤',pct(D.max_drawdown_pct),cls(D.max_drawdown_pct)],['胜率',D.win_rate==null?'—':(D.win_rate*100).toFixed(1)+'%',''],['成交笔数',D.n_fills+' <small>拒单 '+D.n_rejects+'</small>',''],['初始资金',money(D.initial_capital)+((D.config.pending_confirmation||[]).includes('initial_capital')?' <small style="color:var(--gold)">待确认</small>':''),'']];
+  $('#cards').innerHTML=c.map(x=>'<div class="cd"><b class="'+x[2]+'">'+x[1]+'</b><small>'+x[0]+'</small></div>').join('');
+  $('#acct').textContent='开户 '+(D.start_date||'—')+' · 估值 '+(mk||'尚无（首个收盘后生成）')}
+function renderPos(){const P=D.positions||[];if(!P.length){$('#pos').innerHTML='<div class="empty">暂无持仓（规则待定，尚未交易）。</div>';return}
+  const lm={};(D.last_mark_positions||[]).forEach(p=>lm[p.code]=p);
+  $('#pos').innerHTML='<table class="t"><thead><tr><th class="l">股票</th><th>持股</th><th>可卖</th><th>成本价</th><th>现价</th><th>涨跌</th><th>市值</th><th>浮动盈亏</th><th class="l">买入日</th></tr></thead><tbody>'+P.map(p=>{const q=LQ[p.code]||{},px=num(q.f2)??(lm[p.code]||{}).close??null;const val=px==null?null:px*p.shares,un=val==null?null:val-p.cost_total;
+    return'<tr><td class="l">'+esc(p.name)+'<br><small class="z">'+esc(p.code)+'</small></td><td>'+p.shares+'</td><td>'+p.sellable+'</td><td>'+(p.avg_cost??'—')+'</td><td class="'+cls(num(q.f3))+'">'+(px??'—')+'</td><td class="'+cls(num(q.f3))+'">'+pct(num(q.f3))+'</td><td>'+money(val)+'</td><td class="'+cls(un)+'">'+(un==null?'—':(un>0?'+':'')+money(un))+'</td><td class="l">'+esc(p.buy_dates.join(','))+'</td></tr>'}).join('')+'</tbody></table>'}
+function renderTrades(){const F=(D.fills||[]).map(x=>({...x,k:'成交'})).concat((D.rejects||[]).map(x=>({...x,k:'拒单'}))).sort((a,b)=>b.seq-a.seq);$('#ntr').textContent=F.length+' 条';
+  if(!F.length){$('#trades').innerHTML='<div class="empty">尚无交易。每笔订单都会记录：决策时间、依据（热点排名、资金大脑评分/档位、主力资金流）、参考价、成交价、费用和账本哈希。</div>';return}
+  $('#trades').innerHTML='<table class="t"><thead><tr><th class="l">时间</th><th class="l">类型</th><th class="l">股票</th><th>股数</th><th>价格</th><th>金额</th><th>费用</th><th>盈亏</th><th class="l">理由 / 依据</th></tr></thead><tbody>'+F.map(x=>{const inp=x.inputs||{};const ev=[inp.hot_rank!=null?'热点#'+inp.hot_rank:'',inp.score!=null?'评分 '+inp.score+(inp.band_label?'·'+inp.band_label:''):'',inp.flow!=null?'主力 '+inp.flow:''].filter(Boolean).join('，');
+   return'<tr><td class="l">'+esc((x.decision_ts||x.ts||'').replace('T',' ').slice(5,16))+'</td><td class="l '+(x.k==='拒单'?'z':(x.side==='buy'?'u':'d'))+'">'+(x.k==='拒单'?'拒单':(x.side==='buy'?'买入':'卖出'))+'</td><td class="l">'+esc(x.name)+'<br><small class="z">'+esc(x.code)+'</small></td><td>'+(x.shares??'—')+'</td><td>'+(x.price??'—')+'</td><td>'+money(x.amount)+'</td><td>'+(x.commission!=null?money(x.commission+(x.stamp_tax||0)):'—')+'</td><td class="'+cls(x.realized_pnl)+'">'+(x.realized_pnl==null?'—':money(x.realized_pnl))+'</td><td class="w">'+esc(x.reason||'')+(x.reject_reason?'<br><span class="bad">'+esc(x.reject_reason)+'</span>':'')+(ev?'<br><small class="z">'+esc(ev)+'</small>':'')+'</td></tr>'}).join('')+'</tbody></table>'}
+function renderDecs(){const X=(D.decisions||[]).slice().reverse();if(!X.length){$('#decs').innerHTML='<div class="empty">尚无决策记录（决策时点：早盘 '+esc(D.config.decision_times.am)+'、午后 '+esc(D.config.decision_times.pm)+'、尾盘 '+esc(D.config.decision_times.close)+'；收盘估值 '+esc(D.config.decision_times.mark)+'）。</div>';return}
+  $('#decs').innerHTML='<table class="t"><thead><tr><th class="l">日期</th><th class="l">时点</th><th class="l">策略</th><th>意图</th><th>成交</th><th>拒单</th><th class="l">说明</th></tr></thead><tbody>'+X.map(x=>'<tr><td class="l">'+esc(x.date)+'</td><td class="l">'+esc(x.phase)+'</td><td class="l">'+esc(x.strategy)+'</td><td>'+x.n_intents+'</td><td>'+x.n_fills+'</td><td>'+x.n_rejects+'</td><td class="w">'+esc((x.notes||[]).join('；'))+'</td></tr>').join('')+'</tbody></table>'}
+function renderLedger(){const L=D.ledger||{},c=D.config;
+  $('#ledger').innerHTML='账本状态：'+(L.chain_ok&&!(L.problems||[]).length?'<b class="ok">✔ 哈希链完整</b>':'<b class="bad">✖ 校验失败：'+esc((L.problems||[]).join('；'))+'</b>')+' · '+L.entries+' 条<br>创世哈希 <code>'+esc(L.genesis)+'</code><br>最新哈希 <code>'+esc(L.head)+'</code><br>'
+   +'成本：佣金每边 '+(c.commission_rate*100).toFixed(3)+'%（最低 '+c.commission_min+' 元）、印花税卖出 '+(c.stamp_tax_rate*100).toFixed(2)+'%、滑点每边 '+(c.slippage_rate*100).toFixed(2)+'%；成交价：'+esc(c.fill_price==='live_last'?'决策时刻东方财富实时最新价':c.fill_price)+'；一手 '+c.lot_size+' 股；T+1；涨停不买、跌停不卖；停牌拒单。<br>'
+   +'待 Jason 确认：'+((c.pending_confirmation||[]).map(esc).join('、')||'无')+'<br><small class="z">页面生成 '+esc(D.generated_at)+'</small>'}
+function drawChart(){const cv=$('#chart'),dpr=Math.min(2,devicePixelRatio||1),W=cv.clientWidth,H=cv.clientHeight;cv.width=W*dpr;cv.height=H*dpr;const g=cv.getContext('2d');g.scale(dpr,dpr);
+  const S=D.nav_series||[];g.fillStyle='#8aa6c8';g.font='12px sans-serif';
+  if(S.length<2){g.textAlign='center';g.fillText(S.length?'已有 1 个净值点（'+S[0].date+'），第 2 个交易日收盘后开始绘制曲线':'首个净值快照将在开户日收盘后（'+D.config.decision_times.mark+'）生成',W/2,H/2);return}
+  const keys=[['nav','#8fd8ff'],['沪深300','#ffd166'],['上证指数','#c792ea']];const val=(p,k)=>k==='nav'?p.nav_norm:(p.bench_norm||{})[k];
+  let mn=1,mx=1;S.forEach(p=>keys.forEach(([k])=>{const v=val(p,k);if(v!=null){mn=Math.min(mn,v);mx=Math.max(mx,v)}}));const pad=(mx-mn)*.1||.01;mn-=pad;mx+=pad;
+  const pl=48,pr=10,pt=12,pb=22,X=i=>pl+i/(S.length-1)*(W-pl-pr),Y=v=>pt+(mx-v)/(mx-mn)*(H-pt-pb);
+  g.strokeStyle='#1d3a66';[mn+pad,1,mx-pad].forEach(v=>{g.beginPath();g.moveTo(pl,Y(v));g.lineTo(W-pr,Y(v));g.stroke();g.fillText(sg((v-1)*100)+((v-1)*100).toFixed(1)+'%',4,Y(v)+4)});
+  g.fillText(S[0].date,pl,H-6);g.textAlign='right';g.fillText(S[S.length-1].date,W-pr,H-6);
+  keys.forEach(([k,c])=>{g.strokeStyle=c;g.lineWidth=k==='nav'?2.4:1.4;g.beginPath();let st=false;S.forEach((p,i)=>{const v=val(p,k);if(v==null)return;st?g.lineTo(X(i),Y(v)):g.moveTo(X(i),Y(v));st=true});g.stroke()})}
+function start(d){D=d;$('#sub').textContent=(D.account_id||'')+' · '+(D.config.currency||'CNY');renderBanner();renderCards();renderPos();renderTrades();renderDecs();renderLedger();drawChart();poll();schedule();addEventListener('resize',drawChart)}
+let ENC=null;const KEYPFX='ashare_dash_key:';const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const b64e=b=>{const u=new Uint8Array(b);let s='';for(let i=0;i<u.length;i++)s+=String.fromCharCode(u[i]);return btoa(s)};
+async function pwKey(pw,E,ext){const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt:b64d(E.salt),iterations:E.iter,hash:'SHA-256'},base,{name:'AES-GCM',length:256},ext,['decrypt'])}
+const aadOf=E=>new TextEncoder().encode(E.v+'|'+E.alg+'|'+E.kdf+'|'+E.iter+'|'+E.salt);
+async function dec(key,E){const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(E.iv),additionalData:aadOf(E)},key,b64d(E.ct));return JSON.parse(new TextDecoder().decode(pt))}
+function lockUI(m){$('.wrap').hidden=true;$('#lock').hidden=false;$('#lke').textContent=m||''}
+function unlocked(d){$('#lock').hidden=true;$('.wrap').hidden=false;if(ENC){$('#lockb').hidden=false;$('#lockb').onclick=()=>{try{localStorage.removeItem(KEYPFX+ENC.salt)}catch(e){}location.reload()}}start(d)}
+async function boot(){const emb=JSON.parse($('#embedded').textContent);if(emb.plain){unlocked(emb.plain);return}ENC=emb.enc;
+  if(!(window.crypto&&crypto.subtle)){lockUI('当前浏览器不支持页面解密');return}const sk=KEYPFX+ENC.salt;let saved=null;try{saved=localStorage.getItem(sk)}catch(e){}
+  if(saved){try{const key=await crypto.subtle.importKey('raw',b64d(saved),{name:'AES-GCM'},false,['decrypt']);unlocked(await dec(key,ENC));return}catch(e){try{localStorage.removeItem(sk)}catch(_){}lockUI('已记住的密钥已失效，请重新输入')}}else lockUI('');
+  $('#lkf').onsubmit=async ev=>{ev.preventDefault();const pw=$('#lkp').value,btn=$('#lkb');if(!pw){$('#lke').textContent='请输入访问密码';return}btn.disabled=true;btn.textContent='解密中…';const rem=$('#lkr').checked;let d=null,key=null;
+    try{key=await pwKey(pw,ENC,rem);d=await dec(key,ENC)}catch(e){d=null}if(!d){btn.disabled=false;btn.textContent='解锁';$('#lke').textContent='密码错误，请重试';return}
+    if(rem){try{localStorage.setItem(sk,b64e(await crypto.subtle.exportKey('raw',key)))}catch(e){}}$('#lkp').value='';unlocked(d)}}
+boot();
+})();
+</script>
+</body>
+</html>
