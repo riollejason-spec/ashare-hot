@@ -1,0 +1,38 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>资金流看板</title><style>
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#0d1117;color:#e6edf3;margin:0}
+.wrap{max-width:860px;margin:0 auto;padding:16px}h1{font-size:20px;margin:4px 0}small,.dim{color:#8b949e}
+section{border:1px solid #30363d;border-radius:8px;padding:12px 14px;margin:14px 0;background:#161b22}h2{font-size:16px;margin:0 0 8px}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;margin-left:8px;color:#fff;vertical-align:middle}
+.end{background:#da3633}.ref{background:#9e6a03}.trial{background:#1f6feb}
+table{border-collapse:collapse;width:100%}th{text-align:left;color:#8b949e;font-weight:500;padding:5px 12px 5px 0;white-space:nowrap;width:1%}td{padding:5px 0}
+pre{white-space:pre-wrap;word-break:break-all;background:#0d1117;border:1px solid #30363d;padding:10px;border-radius:6px;font-size:12.5px}
+.lock{max-width:320px;margin:80px auto;text-align:center}.lock input{width:100%;padding:8px;margin:8px 0;box-sizing:border-box}.lock button{padding:8px 18px}
+#lke{color:#f85149;min-height:1.2em}#lockb{float:right;font-size:12px}
+</style></head><body>
+<div class="lock" id="lock" hidden><form id="lkf" autocomplete="off"><h2>资金流看板</h2><p class="dim">输入验证板访问密码</p>
+<input type="password" id="lkp" placeholder="访问密码"><label class="dim"><input type="checkbox" id="lkr" style="width:auto"> 在本设备记住</label><br>
+<button id="lkb">解锁</button><p id="lke"></p></form></div>
+<div class="wrap" hidden><button id="lockb" hidden>锁定</button><h1>资金流看板</h1><small id="gen"></small><div id="main"></div></div>
+<script type="application/json" id="embedded">{"enc": {"v": 2, "alg": "AES-256-GCM", "kdf": "PBKDF2-SHA256", "iter": 600000, "salt": "Zb3gKOVU5yUrjd5T+U5bPw==", "iv": "+oJX7y7kMmL2Ds7o", "ct": "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"}}</script>
+<script>(function(){
+const $=s=>document.querySelector(s);const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function start(d){$('#gen').textContent='生成：'+d.generated_at+'（北京时间）';const V=d.v33,E=d.evening,H=d.h1;
+ let h='<section><h2>V3.3 模拟盘<span class="tag end">'+esc(V.title)+'</span></h2><table>'+V.rows.map(r=>'<tr><th>'+esc(r[0])+'</th><td>'+esc(r[1])+'</td></tr>').join('')+'</table><p class="dim">'+esc(V.note)+'</p></section>';
+ h+='<section><h2>晚间空跑名单<span class="tag ref">'+esc(E.tag)+'</span></h2><p class="dim">'+esc(E.note)+'</p></section>';
+ h+='<section><h2>H1 交易部'+(H.trial?'<span class="tag trial">trial 试运行</span>':'')+'</h2><p class="dim">来源：'+esc(H.source)+'<br>读取时间：'+esc(H.read_at)+'（北京时间）；status.md 最近提交 '+esc(H.commit)+'；sha256 '+esc(H.sha256.slice(0,12))+'…</p><pre>'+esc(H.raw)+'</pre></section>';
+ $('#main').innerHTML=h}
+let ENC=null;const KEYPFX='ashare_dash_key:';const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const b64e=b=>{const u=new Uint8Array(b);let s='';for(let i=0;i<u.length;i++)s+=String.fromCharCode(u[i]);return btoa(s)};
+async function pwKey(pw,E,ext){const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt:b64d(E.salt),iterations:E.iter,hash:'SHA-256'},base,{name:'AES-GCM',length:256},ext,['decrypt'])}
+const aadOf=E=>new TextEncoder().encode(E.v+'|'+E.alg+'|'+E.kdf+'|'+E.iter+'|'+E.salt);
+async function dec(key,E){const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(E.iv),additionalData:aadOf(E)},key,b64d(E.ct));return JSON.parse(new TextDecoder().decode(pt))}
+function lockUI(m){$('.wrap').hidden=true;$('#lock').hidden=false;$('#lke').textContent=m||''}
+function unlocked(d){$('#lock').hidden=true;$('.wrap').hidden=false;if(ENC){$('#lockb').hidden=false;$('#lockb').onclick=()=>{try{localStorage.removeItem(KEYPFX+ENC.salt)}catch(e){}location.reload()}}start(d)}
+async function boot(){const emb=JSON.parse($('#embedded').textContent);if(emb.plain){unlocked(emb.plain);return}ENC=emb.enc;
+ if(!(window.crypto&&crypto.subtle)){lockUI('当前浏览器不支持页面解密');return}const sk=KEYPFX+ENC.salt;let saved=null;try{saved=localStorage.getItem(sk)}catch(e){}
+ if(saved){try{const key=await crypto.subtle.importKey('raw',b64d(saved),{name:'AES-GCM'},false,['decrypt']);unlocked(await dec(key,ENC));return}catch(e){try{localStorage.removeItem(sk)}catch(_){}lockUI('已记住的密钥已失效，请重新输入')}}else lockUI('');
+ $('#lkf').onsubmit=async ev=>{ev.preventDefault();const pw=$('#lkp').value,btn=$('#lkb');if(!pw){$('#lke').textContent='请输入访问密码';return}btn.disabled=true;btn.textContent='解密中…';const rem=$('#lkr').checked;let d=null,key=null;
+  try{key=await pwKey(pw,ENC,rem);d=await dec(key,ENC)}catch(e){d=null}if(!d){btn.disabled=false;btn.textContent='解锁';$('#lke').textContent='密码错误，请重试';return}
+  if(rem){try{localStorage.setItem(sk,b64e(await crypto.subtle.exportKey('raw',key)))}catch(e){}}$('#lkp').value='';unlocked(d)}}
+boot();})();</script></body></html>
