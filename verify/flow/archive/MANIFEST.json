@@ -1,0 +1,17 @@
+{
+  "kind": "archived_ciphertext",
+  "title": "资金流看板",
+  "archived_from": "verify/flow/index.html",
+  "source_commit": "e03e45073ca623fff7f3dd5dd308ac6eb298fbdf",
+  "sha256": "ecab51011db0a0ab632fe461cf26c4d04381d875081a822aa72de8264beb088e",
+  "bytes": 270379,
+  "encryption": {
+    "v": 2,
+    "alg": "AES-256-GCM",
+    "kdf": "PBKDF2-SHA256",
+    "iter": 600000,
+    "password_env": "VERIFY_DASHBOARD_PASSWORD"
+  },
+  "note": "2026-11-20 资金流看板密文的字节级副本，供回溯。文件仍是密文，不是避险观察池，也不含新的观察明细。解密口令与验证板相同，不在仓库中。归档比原路径深一层：页内相对链接 ../ 会落到 verify/flow/，../../brain/ 仍指向 brain/。",
+  "do_not_decrypt_into_repo": true
+}

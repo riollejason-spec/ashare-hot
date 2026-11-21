@@ -1,0 +1,4 @@
+# 避险观察池本地明文预览，禁止进公开仓库
+verify/flow/generator/preview/
+__pycache__/
+*.pyc

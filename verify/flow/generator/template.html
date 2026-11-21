@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'; connect-src 'none'; frame-src 'none'; object-src 'none'">
+<link rel="icon" href="data:,">
+<title>避险观察池</title>
+<style>
+:root{--bg:#f2f5f3;--card:#fff;--ink:#1b2823;--dim:#5c6d66;--line:#d5e0da;--warn:#7a4a09;--warnbg:#fff6e8;--bad:#8f2d2d;--up:#c62828;--down:#1b7a45}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "PingFang SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif}
+body{overflow-wrap:anywhere}
+.wrap{max-width:760px;margin:0 auto;padding:max(10px,env(safe-area-inset-top)) 12px 48px}
+h1{font-size:22px;line-height:1.3;margin:0}
+h2{font-size:16px;margin:0 0 8px}
+p{margin:6px 0}
+.dim{color:var(--dim);font-size:13px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin:10px 0}
+.banner{background:var(--warnbg);border:1px solid #e4c48a;color:var(--warn);border-radius:14px;padding:12px}
+.banner b{display:block;font-size:18px;margin-bottom:4px}
+.banner.final{background:#e8f6ee;border-color:#b7e0c8;color:#145c32}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);border-radius:999px;padding:3px 8px;font-size:12px;background:#fff;color:var(--ink)}
+.chip.warn{background:#fff6e8;border-color:#e4c48a;color:var(--warn)}
+.chip.bad{background:#fdeeee;border-color:#efc0c0;color:var(--bad)}
+.chip.ok{background:#e8f6ee;border-color:#b7e0c8;color:#145c32}
+.miss{color:var(--bad);font-weight:650}
+.num{font-variant-numeric:tabular-nums}
+.u{color:var(--up)} .d{color:var(--down)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{border:1px solid var(--line);border-radius:10px;padding:8px}
+.stat b{display:block;font-size:18px;font-weight:650}
+.tools{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.tools button,.tools select{font:inherit;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 8px;color:inherit}
+.tools button.on{background:#1b2823;color:#fff}
+.scroll{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:max-content;min-width:100%;font-size:13px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;vertical-align:top}
+th.l,td.l{text-align:left;white-space:normal}
+button.linkish{background:none;border:0;padding:0;color:#0b5f78;font:inherit;text-align:left}
+tr.on{background:#f4faf7}
+svg{width:100%;height:auto;display:block}
+path{fill:none;stroke:#1f6f8b;stroke-width:2}
+path.bf{stroke:#b07d2a;stroke-dasharray:4 3}
+circle{fill:#1f6f8b}
+.note{font-size:13px;color:var(--dim)}
+.lock{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+.lk{width:min(360px,100%);background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}
+.lk input{width:100%;font-size:16px;padding:10px;border-radius:8px;border:1px solid var(--line);margin:8px 0}
+.lk button{width:100%;font:inherit;padding:10px;border:0;border-radius:8px;background:#1b2823;color:#fff}
+#lke{color:var(--bad);min-height:1.2em;font-size:13px}
+[hidden]{display:none!important}
+@media(max-width:560px){.grid{grid-template-columns:1fr} h1{font-size:20px}}
+</style>
+</head>
+<body>
+<div class="lock" id="lock" hidden>
+<form class="lk" id="lkf" autocomplete="off">
+<h2>避险观察池</h2>
+<p class="dim">输入验证板访问密码。没有密码不能查看观察数据。</p>
+<input type="password" id="lkp" placeholder="访问密码" aria-label="访问密码">
+<label class="dim"><input type="checkbox" id="lkr"> 在本设备记住</label>
+<button id="lkb" type="submit">解锁</button>
+<p id="lke"></p>
+</form>
+</div>
+<div class="wrap" id="wrap" hidden>
+<header>
+<h1>避险观察池</h1>
+<p class="dim">固定防御观察，不是买入名单，没有总分。资金数是成交分类估算。</p>
+</header>
+<div id="app"></div>
+</div>
+<script type="application/json" id="embedded">__DATA__</script>
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function miss(){return '<span class="miss" data-missing="1">缺失</span>';}
+function numOk(v){return typeof v==='number'&&isFinite(v);}
+function pct(v){
+  if(!numOk(v)) return miss();
+  const sign=v>0?'+':'';
+  const t=Math.abs(v)<1e-12?'0':String(Math.round(v*10000)/10000);
+  return '<span class="num '+(v>0?'u':v<0?'d':'')+'" data-zero="'+(v===0?1:0)+'">'+sign+esc(t)+'%</span>';
+}
+function pp(v){
+  if(!numOk(v)) return miss();
+  const sign=v>0?'+':'';
+  return '<span class="num '+(v>0?'u':v<0?'d':'')+'">'+sign+esc(String(Math.round(v*10000)/10000))+' 个百分点</span>';
+}
+function yuan(v){
+  if(!numOk(v)) return miss();
+  const sign=v<0?'-':'';
+  const a=Math.abs(v);
+  let t;
+  if(a>=1e8) t=(Math.round(a/1e8*10000)/10000)+' 亿';
+  else if(a>=1e4) t=(Math.round(a/1e4*100)/100)+' 万';
+  else t=(Math.round(a*100)/100)+' 元';
+  return '<span class="num" data-raw="'+esc(String(v))+'" data-zero="'+(v===0?1:0)+'">'+sign+esc(t)+'</span>';
+}
+function intish(v){
+  if(!numOk(v)) return miss();
+  return '<span class="num" data-raw="'+esc(String(v))+'" data-zero="'+(v===0?1:0)+'">'+esc(String(v))+'</span>';
+}
+function rawNum(v){
+  if(!numOk(v)) return miss();
+  return '<span class="num" data-raw="'+esc(String(v))+'" data-zero="'+(v===0?1:0)+'">'+esc(String(v))+'</span>';
+}
+const STATE={filter:'all',sort:'input',view:'flow',range:20,open:null};
+function slicePts(pts){
+  const all=pts||[];
+  const cut=all.slice(-STATE.range);
+  return {pts:cut,short:all.length<STATE.range,n:all.length};
+}
+function segments(values){
+  const segs=[]; let cur=[];
+  values.forEach((v,i)=>{
+    if(!numOk(v)){ if(cur.length) segs.push(cur); cur=[]; return; }
+    cur.push(i);
+  });
+  if(cur.length) segs.push(cur);
+  return segs;
+}
+function chart(points,pick,dashPick){
+  const sl=slicePts(points);
+  const vals=sl.pts.map(pick);
+  if(!vals.some(numOk)) return '<p class="miss" data-missing="1">序列未提供</p>';
+  const nums=vals.filter(numOk);
+  const min=Math.min.apply(null,nums), max=Math.max.apply(null,nums);
+  const span=(max-min)||1, w=320,h=96,pad=8;
+  const x=i=>pad+(vals.length===1?(w-2*pad)/2:(w-2*pad)*i/(vals.length-1));
+  const y=v=>pad+(h-2*pad)*(1-(v-min)/span);
+  const runs=[];
+  vals.forEach((v,i)=>{
+    if(!numOk(v)) return;
+    const dash=!!(dashPick&&dashPick(sl.pts[i]));
+    const prev=runs[runs.length-1];
+    if(prev&&prev.dash===dash&&prev.idx[prev.idx.length-1]===i-1) prev.idx.push(i);
+    else runs.push({dash:dash,idx:[i]});
+  });
+  const segs=runs;
+  let d='';
+  segs.forEach(seg=>{
+    const cls=seg.dash?' class="bf"':'';
+    seg=seg.idx;
+    if(seg.length===1){
+      d+='<circle '+cls+' cx="'+x(seg[0]).toFixed(1)+'" cy="'+y(vals[seg[0]]).toFixed(1)+'" r="2.6"></circle>';
+    }else{
+      d+='<path'+cls+' d="'+seg.map((i,k)=>(k?'L':'M')+x(i).toFixed(1)+' '+y(vals[i]).toFixed(1)).join(' ')+'"></path>';
+    }
+  });
+  const cap=sl.short?('仅有 '+sl.n+' 个交易日，未补到 '+STATE.range+' 日'):('最近 '+sl.pts.length+' 个交易日');
+  return '<svg viewBox="0 0 '+w+' '+h+'" data-gap-segments="'+segs.length+'" role="img">'+d+'</svg><p class="note">'+cap+'。缺失断开，不连成 0。</p>';
+}
+function interferenceWord(item){
+  const st=item&&item.state;
+  if(st==='unreviewed') return '<span class="chip bad" data-interference="unreviewed">未核验</span>';
+  if(st==='clear') return '<span class="chip" data-interference="clear">已核验，没有该项记录</span>';
+  if(st==='present') return '<span class="chip warn" data-interference="present">有记录</span>';
+  return '<span class="chip warn" data-interference="missing">未提供</span>';
+}
+function stockSort(list){
+  const arr=list.slice();
+  const key=STATE.sort;
+  if(key==='input') return arr;
+  function val(s){
+    if(key==='ratio') return s.net_flow_to_amount_pct;
+    if(key==='inflow') return s.windows&&s.windows['10']?s.windows['10'].inflow_days:null;
+    if(key==='excess') return s.excess_1d_vs_csi300_pp;
+    return null;
+  }
+  arr.sort((a,b)=>{
+    const x=val(a), y=val(b);
+    const xn=numOk(x), yn=numOk(y);
+    if(!xn&&!yn) return a._i-b._i;
+    if(!xn) return 1;
+    if(!yn) return -1;
+    return y-x || a._i-b._i;
+  });
+  return arr;
+}
+function render(D){
+  const B=D.banner, C=D.clock;
+  let h='';
+  h+='<section class="banner '+(B.tone==='final'?'final':'')+'" data-sec="banner" data-pool-tone="'+esc(B.tone)+'" data-auto-repair="0">';
+  h+='<b>'+esc(B.title)+'</b>';
+  (B.lines||[]).forEach(line=>{h+='<div>'+esc(line)+'</div>';});
+  if(D.fixture==='synthetic'||D.preview){
+    h+='<div>'+(D.fixture==='synthetic'?'合成测试数据，不是市场结果。':'')+(D.preview?'本地明文预览，不是发布页。':'')+'</div>';
+  }
+  h+='</section>';
+  h+='<section class="card" data-sec="coverage"><h2>截至日期与覆盖</h2>';
+  h+='<p>交易日 <b>'+esc(C.trade_date||'未提供')+'</b> · '+esc(C.timezone||'')+'</p>';
+  h+='<p>'+esc(C.shown_label)+' <b>'+esc(C.shown_at||'未提供')+'</b></p>';
+  h+='<p class="dim">取数 '+esc(C.fetched_at||'未提供')+(C.verified_at?' · 复核 '+esc(C.verified_at):' · 没有单独的复核时间')+'</p>';
+  h+='<p class="dim">池版本 '+esc(C.pool_version)+' · 状态 '+esc(C.pool_status)+' · 模式 '+esc(C.mode)+' · 修订 '+esc(C.revision)+'</p>';
+  h+='<div class="chips">';
+  h+='<span class="chip '+(D.coverage.display_status==='complete'?'ok':'bad')+'">'+esc(D.coverage.status_text)+'</span>';
+  (D.coverage.items||[]).forEach(it=>{
+    h+='<span class="chip '+(it.ok?'ok':'warn')+'">'+esc(it.label)+' '+esc(it.n==null?'缺':it.n)+'/'+esc(it.of==null?'缺':it.of)+'</span>';
+  });
+  h+='</div>';
+  h+='<p data-field="finality">'+esc(D.finality.text)+'</p>';
+  h+='<p>'+(D.finality.vendor_final?'供应商终值标记：有':'没有供应商终值标记')+'</p>';
+  if(D.verification){
+    const V=D.verification;
+    h+='<p class="dim">盘后复核 '+esc(V.checked_at||'未提供')+' · 返回行数 '+(V.returned_rows==null?miss():esc(String(V.returned_rows)))+' · 池内核到 '+(V.verified_pool_n==null?miss():esc(String(V.verified_pool_n)))+' · 缺失 '+(V.missing_n==null?miss():esc(String(V.missing_n)))+' · 变动 '+(V.changed_n==null?miss():esc(String(V.changed_n)))+' · 原始字段保持不变 '+(V.all_pool_fields_unchanged===true?'是':V.all_pool_fields_unchanged===false?'否':'未提供')+'</p>';
+  }
+  const U=D.unreviewed;
+  h+='<p data-field="unreviewed-banner"><span class="chip bad" data-interference="unreviewed">公告 / 回购 / 调仓：未核验 '+esc(U.stocks_unreviewed)+' 只</span></p>';
+  h+='<p class="note">未核验不等于没有干扰。复权因子已单独核对：当日变化 '+esc(U.factor_changed_n)+' 只。</p>';
+  if(D.pending&&D.pending.length){
+    h+='<ul>';
+    D.pending.forEach(p=>{h+='<li>'+esc(p)+'</li>';});
+    h+='</ul>';
+  }
+  h+='</section>';
+  const Hln=D.headlines;
+  h+='<section class="card" data-sec="flow"><h2>资金与当日等权</h2>';
+  h+='<p class="note">下面的池级数字来自输入的 metrics，本页不把个股相加后换一套结果。</p>';
+  if(Hln.sample_limited) h+='<p class="chip bad">覆盖不足 20 只或不是完整核心覆盖。这里的均值不能冒充固定池收益。</p>';
+  h+='<div class="grid">';
+  h+='<div class="stat"><span class="dim">主净额合计</span><b data-field="net">'+yuan(Hln.net_flow_yuan)+'</b></div>';
+  h+='<div class="stat"><span class="dim">净流入只数</span><b data-field="inflow">'+intish(Hln.inflow_n)+' / '+esc(Hln.pool_n)+'</b></div>';
+  h+='<div class="stat"><span class="dim">上涨只数</span><b>'+intish(Hln.up_n)+' / '+esc(Hln.pool_n)+'</b></div>';
+  h+='<div class="stat"><span class="dim">个股等权当日</span><b data-field="eq">'+pct(Hln.equal_weight_return_1d_pct)+'</b></div>';
+  h+='</div>';
+  h+='<p class="dim">5 日等权 '+pct(Hln.equal_weight_return_5d_pct)+' · 20 日等权 '+pct(Hln.equal_weight_return_20d_pct)+' · 当日相对沪深300 '+pp(Hln.excess_1d_vs_csi300_pp)+'</p>';
+  h+='<p class="note">主净额是 net_mf_amount 换算的成交分类估算，不是四档差额之和，也不是机构、游资或散户比例。池收益为正，也不会被本页写成广泛修复。</p>';
+  h+='</section>';
+  h+='<section class="card" data-sec="windows"><h2>3 / 5 / 10 日持续性</h2>';
+  h+='<p>完整窗口只数（输入里的 complete）：3 日 '+intish(D.window_complete['3'])+' · 5 日 '+intish(D.window_complete['5'])+' · 10 日 '+intish(D.window_complete['10'])+'。不完整的累计和占比保持缺失，流入天数缺失不显示为 0。</p>';
+  h+='</section>';
+  h+='<section class="card" data-sec="conflict"><h2>价格与资金</h2>';
+  h+='<p>5 日价资矛盾 '+intish(D.conflict.flow_price_conflict_n)+' 只 · 暂行积累标记 '+intish(D.conflict.candidate_n)+' 只</p>';
+  h+='<p class="note">暂行标记不是交易信号，也不是机构建仓。阈值版本：'+esc(D.conflict.threshold_version||'未提供')+'。</p>';
+  h+='</section>';
+  h+='<section class="card" data-sec="sectors"><h2>五个观察组</h2>';
+  h+='<p data-field="positive-sectors" data-raw="'+esc(D.positive_sector_n==null?'':String(D.positive_sector_n))+'">当日收益为正的组 '+intish(D.positive_sector_n)+' / '+intish(D.sector_n)+'。组收益用输入的板块等权，本页不重算，也不宣称和个股权重一致。</p>';
+  h+='<p class="note">跨组资金同步性没有单独的相关系数。本页不计算。下面只陈列各组输入的上涨只数、流入只数和等权收益。</p>';
+  h+='<div class="grid">';
+  (D.sectors||[]).forEach(s=>{
+    h+='<div class="stat" data-sector="'+esc(s.name)+'"><b>'+esc(s.name)+'</b>';
+    h+='<div class="dim">名单 '+esc(s.pool_n)+' · 有价格 '+esc(s.price_n)+(s.partial?' · 子样本':'')+'</div>';
+    h+='<div>等权 '+pct(s.equal_weight_return_1d_pct)+'</div>';
+    h+='<div class="dim">上涨 '+esc(s.up_n)+' · 流入 '+esc(s.inflow_n)+' / 有资金 '+esc(s.flow_n)+'</div>';
+    h+='</div>';
+  });
+  h+='</div></section>';
+  const Br=D.breadth;
+  h+='<section class="card" data-sec="breadth"><h2>全A宽度</h2>';
+  if(!Br){h+='<p class="miss" data-missing="1">未提供</p>';}
+  else{
+    h+='<p>'+esc(Br.universe||'')+'</p>';
+    h+='<p>上涨 '+intish(Br.up)+' · 下跌 '+intish(Br.down)+' · 平 '+intish(Br.flat)+' · 有行情 '+intish(Br.traded_n)+'</p>';
+    h+='<p>上涨比例 '+pct(Br.up_ratio_pct)+' · 覆盖 '+pct(Br.coverage_pct)+'</p>';
+    h+='<p class="note">这是成交个股涨跌家数，不是涨跌停统计。状态 '+esc(Br.status||'')+'。</p>';
+  }
+  h+='</section>';
+  h+='<section class="card" data-sec="benchmarks"><h2>大盘、成长风格与黄金</h2>';
+  h+='<p class="note">黄金对照不占 20 只。不预设防御先于黄金或领先大盘。</p>';
+  (D.benchmarks||[]).forEach(b=>{
+    h+='<div class="stat" data-bench="'+esc(b.slot)+'"><b>'+esc(b.name)+'</b> <span class="dim">'+esc(b.role||'')+'</span>';
+    h+='<div>当日 '+pct(b.return_1d_pct)+' · 5 日 '+pct(b.return_5d_pct)+' · 20 日 '+pct(b.return_20d_pct)+'</div>';
+    if(b.date && b.date!==C.trade_date) h+='<div class="chip bad">日期 '+esc(b.date)+'，不是截至日</div>';
+    h+='</div>';
+  });
+  const It=D.interpretation;
+  h+='<h2 style="margin-top:12px">输入里的描述</h2>';
+  if(!It){h+='<p data-reading="none">研究描述未提供。本页不根据池收益自动归类。</p>';}
+  else{
+    h+='<p data-reading="given"><b>'+esc(It.label||'未给标题')+'</b></p>';
+    h+='<p>'+esc(It.reason||'')+'</p>';
+    ['institution_identity','gold_lead_lag','interference_review','snapshot_note'].forEach(k=>{
+      if(It[k]) h+='<p class="dim">'+esc(It[k])+'</p>';
+    });
+  }
+  h+='</section>';
+  h+='<section class="card" data-sec="method"><h2>口径</h2>';
+  const M=D.method||{};
+  h+='<ul>';
+  h+='<li>资金源 '+esc(M.moneyflow_api||'未提供')+'，主字段 '+esc(M.primary_net_field||'net_mf_amount')+'。</li>';
+  h+='<li>'+esc(M.moneyflow_warning||'主净额不能用四档差额代替，也不能换成身份比例。')+'</li>';
+  h+='<li>复权收益：'+esc(M.adjusted_return||'未提供')+'。OHLC 未复权。</li>';
+  h+='<li>'+esc(M.pool_return||'池收益由输入给出。')+'</li>';
+  h+='<li>原始金额万元乘 '+esc(M.flow_unit_multiplier_to_yuan)+' 为元；日成交额千元乘 '+esc(M.daily_amount_multiplier_to_yuan)+' 为元。页面不再乘一次。</li>';
+  h+='</ul>';
+  if(D.pool_file){
+    h+='<p>名单说明：'+esc(D.pool_file.selection_method||'')+'</p>';
+    h+='<p class="dim">'+esc(D.pool_file.change_policy||'')+'</p>';
+    if(!D.pool_file.version_match) h+='<p class="chip bad">池文件版本与当日不一致，保护不解除。</p>';
+  }else h+='<p class="dim">本次没有附 pool 文件。</p>';
+  h+='</section>';
+  h+='<section class="card" data-sec="pool"><h2>观察名单</h2>';
+  h+='<div class="tools" data-tools="1">';
+  h+='<button type="button" data-act="filter" data-v="all"'+(STATE.filter==='all'?' class="on"':'')+'>全部</button>';
+  (D.sectors||[]).forEach(s=>{
+    h+='<button type="button" data-act="filter" data-v="'+esc(s.name)+'"'+(STATE.filter===s.name?' class="on"':'')+'>'+esc(s.name)+'</button>';
+  });
+  h+='<button type="button" data-act="view" data-v="flow"'+(STATE.view==='flow'?' class="on"':'')+'>资金</button>';
+  h+='<button type="button" data-act="view" data-v="price"'+(STATE.view==='price'?' class="on"':'')+'>价格</button>';
+  h+='<button type="button" data-act="sort" data-v="ratio"'+(STATE.sort==='ratio'?' class="on"':'')+'>按资金比例</button>';
+  h+='<button type="button" data-act="sort" data-v="inflow"'+(STATE.sort==='inflow'?' class="on"':'')+'>按 10 日流入天数</button>';
+  h+='<button type="button" data-act="sort" data-v="excess"'+(STATE.sort==='excess'?' class="on"':'')+'>按相对收益</button>';
+  h+='<button type="button" data-act="sort" data-v="input"'+(STATE.sort==='input'?' class="on"':'')+'>输入顺序</button>';
+  h+='</div>';
+  let rows=stockSort((D.stocks||[]).map((s,i)=>Object.assign({_i:i},s))).filter(s=>STATE.filter==='all'||s.sector===STATE.filter);
+  h+='<div class="scroll"><table><thead><tr><th class="l">名称</th>';
+  if(STATE.view==='flow') h+='<th>主净额</th><th>占成交</th><th>3日流入</th><th>5日流入</th><th>10日流入</th>';
+  else h+='<th>当日</th><th>成交额</th><th>换手</th><th>5日</th><th>20日</th>';
+  h+='</tr></thead><tbody>';
+  if(!rows.length) h+='<tr><td class="l" colspan="6">没有可显示的名单</td></tr>';
+  rows.forEach(s=>{
+    const stale=!s.date_match;
+    h+='<tr data-code="'+esc(s.code)+'"'+(STATE.open===s.code?' class="on"':'')+'>';
+    h+='<td class="l"><button type="button" class="linkish" data-act="open" data-code="'+esc(s.code)+'">'+esc(s.name)+'</button>';
+    h+='<div class="dim">'+esc(s.sector)+(stale?' · 日期不符':'')+'</div></td>';
+    if(!s.date_match){
+      const cols=STATE.view==='flow'?5:5;
+      h+='<td colspan="'+cols+'"><span class="chip bad" data-stale="1">日期 '+esc(s.date||'无')+'，不作为 '+esc(C.trade_date)+' 的数值</span></td>';
+    }else if(STATE.view==='flow'){
+      h+='<td>'+yuan(s.net_flow_yuan)+'</td><td>'+pct(s.net_flow_to_amount_pct)+'</td>';
+      ['3','5','10'].forEach(k=>{
+        const w=s.windows[k]||{};
+        h+='<td>'+(w.inflow_days==null?miss():intish(w.inflow_days))+'<div class="dim">'+esc(w.flow_days)+'/'+esc(w.expected_days)+(w.complete?'':' 未齐')+'</div></td>';
+      });
+    }else{
+      h+='<td>'+pct(s.return_1d_pct)+'</td><td>'+yuan(s.amount_yuan)+'</td><td>'+pct(s.turnover_pct)+'</td><td>'+pct(s.return_5d_pct)+'</td><td>'+pct(s.return_20d_pct)+'</td>';
+    }
+    h+='</tr>';
+  });
+  h+='</tbody></table></div></section>';
+  h+=detail(D);
+  h+=history(D);
+  h+='<section class="card" data-sec="events"><h2>后续表现</h2>';
+  h+='<p data-events="closed">'+esc(D.events.reason)+'</p></section>';
+  h+='<section class="card" data-sec="archive"><h2>更早的加密页</h2>';
+  h+='<p>原来的资金流看板（含当时转引的热点和 H1）收在加密归档里，不是本页主视图。</p>';
+  h+='<p><a href="archive/index.html">打开归档密文</a></p></section>';
+  $('#app').innerHTML=h;
+}
+function detail(D){
+  const s=(D.stocks||[]).filter(x=>x.code===STATE.open)[0];
+  let h='<section class="card" data-sec="detail"><h2>个股</h2>';
+  if(!s){return h+'<p class="dim">点名称查看当日价格、窗口和干扰项。</p></section>';}
+  h+='<p><b>'+esc(s.name)+'</b> <span class="dim">'+esc(s.code)+' · '+esc(s.sector)+'</span></p>';
+  if(!s.date_match) h+='<p class="chip bad" data-stale="1">行情日期与截至日不符，下面不把旧数字当成截至日结果。</p>';
+  h+='<p>输入权重 '+rawNum(s.weight)+'（原值，1 表示 100%）</p>';
+  h+='<p>未复权 OHLC '+(s.date_match?rawNum(s.ohlc.open)+' / '+rawNum(s.ohlc.high)+' / '+rawNum(s.ohlc.low)+' / '+rawNum(s.ohlc.close):miss())+'</p>';
+  h+='<p>当日 '+pct(s.date_match?s.return_1d_pct:null)+' · 成交额 '+yuan(s.date_match?s.amount_yuan:null)+' · 换手 '+pct(s.date_match?s.turnover_pct:null)+'</p>';
+  h+='<p>5 日 '+pct(s.date_match?s.return_5d_pct:null)+' · 20 日 '+pct(s.date_match?s.return_20d_pct:null)+' · 当日超额 '+pp(s.date_match?s.excess_1d_vs_csi300_pp:null)+'</p>';
+  h+='<p class="note">没有逐日收盘序列时不画连线，也不用 0 补点。5/20 日收益沿用输入的复权端点。</p>';
+  ['3','5','10'].forEach(k=>{
+    const w=s.windows[k]||{};
+    h+='<p><b>'+k+' 日</b> 流入 '+ (w.inflow_days==null?miss():intish(w.inflow_days))
+      +' · 累计 '+yuan(w.cumulative_net_yuan)+' · 占成交 '+pct(w.net_to_amount_pct)
+      +' · 资金日 '+esc(w.flow_days)+'/'+esc(w.expected_days)+(w.complete?'':' · 未齐')+'</p>';
+  });
+  const mf=s.moneyflow||{};
+  h+='<p>原始主净额 net_mf_amount '+rawNum(mf.net_mf_amount)+' 万元。页面主净额用 net_flow_yuan，不用下面四档相加。</p>';
+  const cn=mf.class_net_yuan||{};
+  h+='<p class="dim">分档差额（元，不是身份比例）：小单 '+yuan(cn.sm)+' · 中单 '+yuan(cn.md)+' · 大单 '+yuan(cn.lg)+' · 特大单 '+yuan(cn.elg)+'</p>';
+  const pe=s.price_evidence||{};
+  h+='<p class="dim">5 日低点相对前 5 日 '+pct(pe.low_5d_vs_previous5_pct)+' · 10 日回撤 '+pct(pe.max_drawdown_10d_pct)
+    +' · 放量 '+(pe.volume_spike_1d==null?miss():esc(pe.volume_spike_1d?'是':'否'))
+    +' · 价资矛盾 '+(pe.flow_price_conflict_5d==null?miss():esc(pe.flow_price_conflict_5d?'是':'否'))+'</p>';
+  const inf=s.interference||{};
+  h+='<p>复权因子变化 '+(inf.adjustment_factor_changed==null?miss():esc(inf.adjustment_factor_changed?'是':'否'))
+    +' · 回购 '+interferenceWord(inf.repurchase)
+    +' · 重大公告 '+interferenceWord(inf.major_announcement)
+    +' · 指数调仓 '+interferenceWord(inf.index_rebalance)+'</p>';
+  if(inf.note) h+='<p class="note">'+esc(inf.note)+'</p>';
+  if(s.reason) h+='<p>'+esc(s.reason)+'</p>';
+  if(s.risk) h+='<p class="dim">风险：'+esc(s.risk)+'</p>';
+  if(s.review){
+    h+='<p class="dim">复核说明'+(D.review&&D.review.version_match?'':'（版本与当日不一致，不并入结论）')+'：'+esc(s.review.recommendation||'')+'</p>';
+    const cf=s.review.cashflow_2025;
+    if(cf){
+      h+='<p class="dim">2025 现金流（单位 '+esc(cf.unit||'未标明')+'，单年不证明稳定）：经营 '+yuan(cf.operating_cashflow)+' · 购建 '+yuan(cf.purchase_construct_long_term_assets)+' · 简化差 '+yuan(cf.operating_less_simple_capex)+'</p>';
+      if(cf.note) h+='<p class="note">'+esc(cf.note)+'</p>';
+    }
+  }
+  return h+'</section>';
+}
+function history(D){
+  const H=D.history;
+  let h='<section class="card" data-sec="history"><h2>近期对照</h2>';
+  h+='<div class="tools">';
+  h+='<button type="button" data-act="range" data-v="20"'+(STATE.range===20?' class="on"':'')+'>近 20 个交易日</button>';
+  h+='<button type="button" data-act="range" data-v="60"'+(STATE.range===60?' class="on"':'')+'>近 60 个交易日</button>';
+  h+='</div>';
+  if(!H||!H.points||!H.points.length) return h+'<p class="miss" data-missing="1">历史序列未提供，不补 0。</p></section>';
+  if(!H.version_match) h+='<p class="chip bad">历史版本与当日池版本不一致。</p>';
+  h+='<p class="note">'+esc(H.caveat||'')+'</p>';
+  const sl=slicePts(H.points);
+  const bf=sl.pts.filter(p=>p.mode==='backfill').length;
+  h+='<p data-mode-mix="1">窗口内回填 '+bf+' 日，候选基线 '+(sl.pts.length-bf)+' 日。回填不能当作当时选股或样本外证据。</p>';
+  h+='<div data-history-points="'+sl.pts.length+'">';
+  sl.pts.forEach(p=>{h+='<i hidden data-mode="'+esc(p.mode)+'"></i>';});
+  h+='</div>';
+  h+='<p>个股等权当日</p>'+chart(H.points,p=>p.eq1,p=>p.mode==='backfill');
+  h+='<p>20 日等权（不足窗口为缺失）</p>'+chart(H.points,p=>p.eq20,p=>p.mode==='backfill');
+  (D.benchmarks||[]).forEach(b=>{
+    h+='<p>'+esc(b.name)+' 当日</p>'+chart(H.points,p=>p.bench&&p.bench[b.ts_code]!=null?p.bench[b.ts_code].return_1d_pct:null,p=>p.mode==='backfill');
+  });
+  h+='<p>全A上涨比例</p>'+chart(H.points,p=>p.breadth_up_ratio,p=>p.mode==='backfill');
+  return h+'</section>';
+}
+document.addEventListener('click',ev=>{
+  const t=ev.target.closest('[data-act]');
+  if(!t||!window.__D) return;
+  const a=t.getAttribute('data-act');
+  if(a==='filter') STATE.filter=t.getAttribute('data-v');
+  else if(a==='view') STATE.view=t.getAttribute('data-v');
+  else if(a==='sort') STATE.sort=t.getAttribute('data-v');
+  else if(a==='range') STATE.range=Number(t.getAttribute('data-v'));
+  else if(a==='open') STATE.open=t.getAttribute('data-code');
+  else return;
+  render(window.__D);
+});
+function start(d){
+  window.__D=d;
+  $('#lock').hidden=true;
+  $('#wrap').hidden=false;
+  render(d);
+}
+let ENC=null;
+const KEYPFX='ashare_dash_key:';
+const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+const b64e=b=>{const u=new Uint8Array(b);let s='';for(let i=0;i<u.length;i++)s+=String.fromCharCode(u[i]);return btoa(s)};
+async function pwKey(pw,E,ext){
+  const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt:b64d(E.salt),iterations:E.iter,hash:'SHA-256'},base,{name:'AES-GCM',length:256},ext,['decrypt']);
+}
+function aadOf(E){return new TextEncoder().encode(E.v+'|'+E.alg+'|'+E.kdf+'|'+E.iter+'|'+E.salt)}
+async function dec(key,E){
+  const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(E.iv),additionalData:aadOf(E)},key,b64d(E.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+function lockUI(m){$('#wrap').hidden=true;$('#lock').hidden=false;$('#lke').textContent=m||'';}
+function encOk(E){try{
+  if(!E||E.v!==2||E.alg!=='AES-256-GCM'||E.kdf!=='PBKDF2-SHA256') return false;
+  if(!Number.isInteger(E.iter)||E.iter<100000||E.iter>2000000) return false;
+  return b64d(E.salt).length===16&&b64d(E.iv).length===12&&b64d(E.ct).length>16;
+}catch(e){return false}}
+async function boot(){
+  const emb=JSON.parse($('#embedded').textContent);
+  if(emb.plain){start(emb.plain);return}
+  ENC=emb.enc;
+  if(!(window.crypto&&crypto.subtle)||!encOk(ENC)){lockUI('页面无法解密');$('#lkb').disabled=true;return}
+  const sk=KEYPFX+ENC.salt;
+  let saved=null; try{saved=localStorage.getItem(sk)}catch(e){}
+  if(saved){
+    try{const key=await crypto.subtle.importKey('raw',b64d(saved),{name:'AES-GCM'},false,['decrypt']);start(await dec(key,ENC));return}
+    catch(e){try{localStorage.removeItem(sk)}catch(_){} lockUI('已记住的密钥失效，请重输')}
+  }else lockUI('');
+  $('#lkf').onsubmit=async ev=>{
+    ev.preventDefault();
+    const pw=$('#lkp').value;
+    if(!pw){$('#lke').textContent='请输入访问密码';return}
+    $('#lkb').disabled=true;
+    let data=null,key=null;
+    try{key=await pwKey(pw,ENC,$('#lkr').checked);data=await dec(key,ENC)}catch(e){data=null}
+    if(!data){$('#lkb').disabled=false;$('#lke').textContent='密码错误，请重试';return}
+    if($('#lkr').checked){try{localStorage.setItem(sk,b64e(await crypto.subtle.exportKey('raw',key)))}catch(e){}}
+    $('#lkp').value='';
+    start(data);
+  };
+}
+boot();
+})();
+</script>
+</body>
+</html>
